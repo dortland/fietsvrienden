@@ -21,6 +21,8 @@
       --moderate: #8B6414;
       --challenging: #B54A1A;
       --epic: #8B2222;
+      --sidebar-w: 264px;
+      --header-h: 72px;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -37,95 +39,100 @@
       background: var(--dark);
       border-bottom: 3px solid var(--orange);
       color: #fff;
-      padding: 0 36px;
-      height: 72px;
+      padding: 0 28px;
+      height: var(--header-h);
       display: flex;
       align-items: center;
       gap: 14px;
-    }
-    .h-logo {
-      width: 36px; height: 36px;
-      opacity: .85;
-      flex-shrink: 0;
-    }
-    .h-divider {
-      width: 1px; height: 28px;
-      background: rgba(255,255,255,.15);
-    }
-    .h-title h1 {
-      font-size: 15px; font-weight: 700;
-      letter-spacing: .04em;
-      text-transform: uppercase;
-    }
-    .h-title p {
-      font-size: 11px;
-      color: rgba(255,255,255,.4);
-      margin-top: 2px;
-      letter-spacing: .02em;
-    }
-    .h-stats { margin-left: auto; display: flex; gap: 28px; }
-    .h-stat { text-align: right; }
-    .h-stat .n {
-      font-size: 18px; font-weight: 700;
-      color: var(--orange); display: block;
-      letter-spacing: -.01em;
-    }
-    .h-stat .l {
-      font-size: 10px;
-      color: rgba(255,255,255,.35);
-      display: block;
-      text-transform: uppercase;
-      letter-spacing: .06em;
-    }
-
-    /* ── FILTER BAR ──────────────────────────── */
-    .fbar {
-      background: #fff;
-      border-bottom: 1px solid var(--border);
-      padding: 0 36px;
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 0;
       position: sticky;
       top: 0;
-      z-index: 200;
-      box-shadow: 0 1px 4px rgba(0,0,0,.04);
+      z-index: 300;
     }
-    .fsec {
+    .h-logo { width: 36px; height: 36px; opacity: .85; flex-shrink: 0; }
+    .h-divider { width: 1px; height: 28px; background: rgba(255,255,255,.15); }
+    .h-title h1 { font-size: 15px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+    .h-title p  { font-size: 11px; color: rgba(255,255,255,.4); margin-top: 2px; letter-spacing: .02em; }
+    .h-stats { margin-left: auto; display: flex; gap: 28px; }
+    .h-stat { text-align: right; }
+    .h-stat .n { font-size: 18px; font-weight: 700; color: var(--orange); display: block; letter-spacing: -.01em; }
+    .h-stat .l { font-size: 10px; color: rgba(255,255,255,.35); display: block; text-transform: uppercase; letter-spacing: .06em; }
+
+    /* ── LAYOUT ──────────────────────────────── */
+    .layout {
       display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 12px 22px 12px 0;
-      margin-right: 22px;
-      border-right: 1px solid var(--border);
+      align-items: flex-start;
+      min-height: calc(100vh - var(--header-h));
     }
-    .fsec:last-of-type { border-right: none; }
-    .flabel {
+
+    /* ── SIDEBAR ─────────────────────────────── */
+    .sidebar {
+      width: var(--sidebar-w);
+      flex-shrink: 0;
+      background: var(--card);
+      border-right: 1px solid var(--border);
+      padding: 20px 18px 24px;
+      position: sticky;
+      top: var(--header-h);
+      height: calc(100vh - var(--header-h));
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .sb-section {
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .sb-section:first-child { padding-top: 4px; }
+    .sb-section:last-child  { border-bottom: none; }
+
+    .sb-label {
+      display: block;
       font-size: 9px;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 1px;
       color: var(--muted);
-      white-space: nowrap;
+      margin-bottom: 8px;
     }
+
     .search-box {
+      width: 100%;
       border: 1px solid var(--border);
       border-radius: 6px;
-      padding: 7px 12px;
+      padding: 8px 11px;
       font-size: 13px;
       outline: none;
-      width: 190px;
       background: var(--bg);
-      transition: border-color .2s, background .2s;
       color: var(--text);
+      transition: border-color .2s, background .2s;
     }
     .search-box:focus { border-color: var(--orange); background: #fff; }
 
-    .rg { display: flex; align-items: center; gap: 8px; }
+    .sort-sel {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 11px;
+      font-size: 13px;
+      outline: none;
+      background: var(--bg);
+      color: var(--text);
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%237A7888' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 11px center;
+      padding-right: 28px;
+    }
+    .sort-sel:focus { border-color: var(--orange); }
+
+    .rg { display: flex; align-items: center; gap: 8px; margin-top: 2px; }
     input[type=range] {
       -webkit-appearance: none;
-      width: 120px;
+      flex: 1;
       height: 3px;
       border-radius: 2px;
       outline: none;
@@ -144,17 +151,13 @@
       box-shadow: 0 1px 4px rgba(0,0,0,.25);
       cursor: pointer;
     }
-    .rg-val {
-      font-size: 12px; font-weight: 600;
-      min-width: 52px;
-      color: var(--text);
-    }
+    .rg-val { font-size: 12px; font-weight: 600; min-width: 52px; text-align: right; color: var(--text); }
 
-    .pills { display: flex; gap: 4px; }
+    .pills { display: flex; flex-wrap: wrap; gap: 4px; }
     .pill {
-      padding: 5px 12px;
+      padding: 5px 10px;
       border-radius: 4px;
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 600;
       letter-spacing: .04em;
       text-transform: uppercase;
@@ -165,30 +168,55 @@
       transition: all .15s;
     }
     .pill:hover { border-color: currentColor; }
-    .pill.on {
-      background: var(--dark);
-      border-color: var(--dark);
-      color: #fff;
-    }
+    .pill.on { background: var(--dark); border-color: var(--dark); color: #fff; }
+    .pill-easy { color: var(--easy);        border-color: var(--easy); }
+    .pill-mod  { color: var(--moderate);    border-color: var(--moderate); }
+    .pill-hard { color: var(--challenging); border-color: var(--challenging); }
+    .pill-epic { color: var(--epic);        border-color: var(--epic); }
     .pill-easy.on  { background: var(--easy);        border-color: var(--easy);        color: #fff; }
     .pill-mod.on   { background: var(--moderate);    border-color: var(--moderate);    color: #fff; }
     .pill-hard.on  { background: var(--challenging); border-color: var(--challenging); color: #fff; }
     .pill-epic.on  { background: var(--epic);        border-color: var(--epic);        color: #fff; }
-    .pill-easy  { color: var(--easy); border-color: var(--easy); }
-    .pill-mod   { color: var(--moderate); border-color: var(--moderate); }
-    .pill-hard  { color: var(--challenging); border-color: var(--challenging); }
-    .pill-epic  { color: var(--epic); border-color: var(--epic); }
 
-    .f-count {
-      margin-left: auto;
+    .sb-footer {
+      margin-top: auto;
+      padding-top: 16px;
       font-size: 11px;
       font-weight: 600;
       letter-spacing: .06em;
       text-transform: uppercase;
       color: var(--muted);
-      white-space: nowrap;
     }
 
+    /* ── MAIN ────────────────────────────────── */
+    .main { flex: 1; min-width: 0; padding: 20px 24px; }
+
+    .main-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .main-count {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .view-btns { display: flex; gap: 4px; }
+    .vbtn {
+      width: 32px; height: 32px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--bg);
+      color: var(--muted);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .15s;
+    }
+    .vbtn:hover { border-color: var(--orange); color: var(--orange); }
+    .vbtn.on { background: var(--dark); border-color: var(--dark); color: #fff; }
 
     /* ── LOADING SPINNER ── */
     .spin {
@@ -200,15 +228,12 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ── GRID ────────────────────────────────── */
-    .content { padding: 28px 36px; }
+    /* ── CARD GRID ────────────────────────────── */
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
-      gap: 16px;
+      grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+      gap: 14px;
     }
-
-    /* ── CARD ────────────────────────────────── */
     .card {
       background: var(--card);
       border-radius: 8px;
@@ -220,39 +245,11 @@
       position: relative;
       overflow: hidden;
     }
-    .card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(0,0,0,.1);
-      border-color: var(--orange);
-    }
-    .card-stripe {
-      position: absolute;
-      left: 0; top: 0; bottom: 0;
-      width: 3px;
-      border-radius: 8px 0 0 8px;
-    }
-    .card-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 10px;
-    }
-    .c-num {
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-    .c-badge {
-      font-size: 9px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: .08em;
-      padding: 3px 8px;
-      border-radius: 3px;
-      color: #fff;
-    }
+    .card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,.1); border-color: var(--orange); }
+    .card-stripe { position: absolute; left: 0; top: 0; bottom: 0; width: 3px; border-radius: 8px 0 0 8px; }
+    .card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .c-num { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+    .c-badge { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; padding: 3px 8px; border-radius: 3px; color: #fff; }
     .c-name    { font-size: 14px; font-weight: 600; line-height: 1.35; margin-bottom: 2px; }
     .c-name-en { font-size: 11px; color: var(--muted); margin-bottom: 14px; }
     .c-stats   { display: flex; gap: 20px; align-items: baseline; }
@@ -260,29 +257,39 @@
     .cst-ico { font-size: 12px; margin-right: 4px; opacity: .7; }
     .cst-val  { font-size: 18px; font-weight: 700; letter-spacing: -.01em; }
     .cst-unit { font-size: 11px; color: var(--muted); }
-    .c-footer {
-      margin-top: 14px;
-      padding-top: 10px;
-      border-top: 1px solid var(--border);
-      display: flex;
+    .c-footer { margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .c-ext { display: flex; align-items: center; gap: 4px; color: var(--orange); font-size: 10px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+    .c-hint { font-size: 10px; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; }
+
+    /* ── LIST VIEW ────────────────────────────── */
+    .list { display: flex; flex-direction: column; gap: 4px; }
+    .list-row {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      display: grid;
+      grid-template-columns: 36px 1fr 80px 86px 106px 20px;
       align-items: center;
-      justify-content: space-between;
+      gap: 10px;
+      padding: 13px 16px 13px 20px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: border-color .15s, box-shadow .15s;
     }
-    .c-ext {
-      display: flex; align-items: center; gap: 4px;
-      color: var(--orange); font-size: 10px; font-weight: 700;
-      letter-spacing: .05em;
-      text-transform: uppercase;
-    }
-    .c-hint {
-      font-size: 10px;
-      color: var(--muted);
-      letter-spacing: .04em;
-      text-transform: uppercase;
-    }
+    .list-row:hover { border-color: var(--orange); box-shadow: 0 2px 10px rgba(0,0,0,.08); }
+    .lr-stripe { position: absolute; left: 0; top: 0; bottom: 0; width: 3px; }
+    .lr-num { font-size: 11px; font-weight: 700; letter-spacing: .06em; color: var(--muted); }
+    .lr-name { min-width: 0; }
+    .lr-name-nl { font-size: 13px; font-weight: 600; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .lr-name-en { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .lr-stat { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; }
+    .lr-stat span { font-size: 11px; font-weight: 400; color: var(--muted); }
+    .lr-badge { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; padding: 4px 9px; border-radius: 3px; color: #fff; white-space: nowrap; }
+    .lr-arrow { color: var(--muted); display: flex; align-items: center; justify-content: flex-end; }
 
     /* ── EMPTY ───────────────────────────────── */
-    .empty { grid-column: 1/-1; text-align: center; padding: 80px 20px; color: var(--muted); }
+    .empty { text-align: center; padding: 80px 20px; color: var(--muted); }
     .empty-ico { font-size: 44px; margin-bottom: 16px; opacity: .5; }
     .empty h3 { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 6px; letter-spacing: .02em; }
     .empty p  { font-size: 13px; }
@@ -322,14 +329,7 @@
       flex-shrink: 0;
     }
     .m-info { flex: 1; }
-    .m-nr {
-      font-size: 9px;
-      font-weight: 700;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,.35);
-      margin-bottom: 6px;
-    }
+    .m-nr   { font-size: 9px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: rgba(255,255,255,.35); margin-bottom: 6px; }
     .m-name { font-size: 19px; font-weight: 700; line-height: 1.2; margin-bottom: 4px; }
     .m-en   { font-size: 12px; color: rgba(255,255,255,.5); letter-spacing: .02em; }
     .m-close {
@@ -347,89 +347,42 @@
     .m-close:hover { background: rgba(255,255,255,.16); color: #fff; }
     .m-body { padding: 22px 24px; overflow-y: auto; flex: 1; }
 
-    .stats-row {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-    .sbox {
-      background: var(--bg);
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      padding: 14px;
-      text-align: center;
-    }
+    .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+    .sbox { background: var(--bg); border-radius: 8px; border: 1px solid var(--border); padding: 14px; text-align: center; }
     .sbox-val  { font-size: 26px; font-weight: 700; line-height: 1; letter-spacing: -.02em; }
     .sbox-unit { font-size: 11px; color: var(--muted); font-weight: 500; margin-left: 2px; }
-    .sbox-lbl  {
-      font-size: 9px; color: var(--muted); margin-top: 6px; display: block;
-      text-transform: uppercase; letter-spacing: .08em; font-weight: 600;
-    }
+    .sbox-lbl  { font-size: 9px; color: var(--muted); margin-top: 6px; display: block; text-transform: uppercase; letter-spacing: .08em; font-weight: 600; }
 
-    .map-wrap {
-      border-radius: 8px;
-      overflow: hidden;
-      height: 290px;
-      border: 1px solid var(--border);
-      position: relative;
-    }
+    .map-wrap { border-radius: 8px; overflow: hidden; height: 290px; border: 1px solid var(--border); position: relative; }
     #route-map { width: 100%; height: 100%; }
-    .map-note {
-      position: absolute;
-      bottom: 8px; left: 8px;
-      background: rgba(255,255,255,.92);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      padding: 4px 8px;
-      font-size: 10px;
-      font-weight: 600;
-      letter-spacing: .04em;
-      color: var(--muted);
-      z-index: 1000;
-      pointer-events: none;
-    }
+    .map-note { position: absolute; bottom: 8px; left: 8px; background: rgba(255,255,255,.92); border: 1px solid var(--border); border-radius: 4px; padding: 4px 8px; font-size: 10px; font-weight: 600; letter-spacing: .04em; color: var(--muted); z-index: 1000; pointer-events: none; }
 
     .m-actions { display: flex; gap: 10px; margin-top: 18px; }
-    .btn-strava {
-      flex: 1;
-      padding: 12px;
-      background: var(--orange); color: #fff;
-      border: none; border-radius: 6px;
-      font-size: 12px; font-weight: 700;
-      letter-spacing: .05em;
-      text-transform: uppercase;
-      cursor: pointer;
-      text-decoration: none;
-      display: flex; align-items: center; justify-content: center; gap: 6px;
-      transition: background .2s;
-    }
+    .btn-strava { flex: 1; padding: 12px; background: var(--orange); color: #fff; border: none; border-radius: 6px; font-size: 12px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; cursor: pointer; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 6px; transition: background .2s; }
     .btn-strava:hover { background: var(--orange-dark); }
-    .btn-close {
-      padding: 12px 20px;
-      background: var(--bg); color: var(--text);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      font-size: 12px; font-weight: 700;
-      letter-spacing: .05em;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: background .2s;
-    }
+    .btn-close { padding: 12px 20px; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 6px; font-size: 12px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; cursor: pointer; transition: background .2s; }
     .btn-close:hover { background: var(--border); }
 
     /* ── RESPONSIVE ─────────────────────────── */
-    @media (max-width: 700px) {
+    @media (max-width: 780px) {
       .header { padding: 14px 16px; height: auto; }
       .h-stats { display: none; }
-      .fbar { padding: 0 16px; flex-direction: column; align-items: flex-start; }
-      .fsec { padding: 8px 0; margin-right: 0; border-right: none; border-bottom: 1px solid var(--border); width: 100%; }
-      .fsec:last-of-type { border-bottom: none; }
-      .f-count { margin-left: 0; }
-      .content { padding: 16px; }
-      .grid { grid-template-columns: 1fr; }
+      .layout { flex-direction: column; }
+      .sidebar {
+        width: 100%;
+        position: static;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        padding: 14px 16px;
+      }
+      .sb-section { padding: 10px 0; }
+      .main { padding: 16px; }
       .m-body { padding: 16px; }
       .stats-row { gap: 8px; }
+      .list-row { grid-template-columns: 32px 1fr 72px 28px; }
+      .list-row .lr-stat:last-of-type,
+      .list-row .lr-badge { display: none; }
     }
   </style>
 </head>
@@ -468,46 +421,92 @@
   </div>
 </header>
 
-<!-- ── FILTER BAR ────────────────────────────── -->
-<div class="fbar">
-  <div class="fsec">
-    <span class="flabel">Zoeken</span>
-    <input class="search-box" id="srch" type="text" placeholder="Route naam…" autocomplete="off" />
-  </div>
+<!-- ── LAYOUT ──────────────────────────────── -->
+<div class="layout">
 
-  <div class="fsec">
-    <span class="flabel">Max afstand</span>
-    <div class="rg">
-      <input type="range" id="km-sl" min="40" max="144" value="144" step="1" />
-      <span class="rg-val" id="km-val">144 km</span>
+  <!-- ── SIDEBAR ──────────────────────────── -->
+  <aside class="sidebar">
+
+    <div class="sb-section">
+      <label class="sb-label" for="srch">Zoeken</label>
+      <input class="search-box" id="srch" type="text" placeholder="Route naam…" autocomplete="off" />
     </div>
-  </div>
 
-  <div class="fsec">
-    <span class="flabel">Max hoogtemeters</span>
-    <div class="rg">
-      <input type="range" id="hm-sl" min="585" max="2214" value="2214" step="1" />
-      <span class="rg-val" id="hm-val">2214 hm</span>
+    <div class="sb-section">
+      <label class="sb-label" for="sort-sel">Sorteren</label>
+      <select class="sort-sel" id="sort-sel">
+        <option value="id">Standaard</option>
+        <option value="km-asc">Afstand ↑ (kort eerst)</option>
+        <option value="km-desc">Afstand ↓ (lang eerst)</option>
+        <option value="hm-asc">Hoogtemeters ↑</option>
+        <option value="hm-desc">Hoogtemeters ↓</option>
+        <option value="diff-asc">Makkelijkst eerst</option>
+        <option value="diff-desc">Zwaarst eerst</option>
+        <option value="name">Naam A–Z</option>
+      </select>
     </div>
-  </div>
 
-  <div class="fsec">
-    <span class="flabel">Moeilijkheid</span>
-    <div class="pills">
-      <button class="pill pill-all on"  data-d="all">Alles</button>
-      <button class="pill pill-easy"    data-d="easy">Makkelijk</button>
-      <button class="pill pill-mod"     data-d="mod">Gemiddeld</button>
-      <button class="pill pill-hard"    data-d="hard">Uitdagend</button>
-      <button class="pill pill-epic"    data-d="epic">Episch</button>
+    <div class="sb-section">
+      <label class="sb-label">Max afstand</label>
+      <div class="rg">
+        <input type="range" id="km-sl" min="40" max="144" value="144" step="1" />
+        <span class="rg-val" id="km-val">144 km</span>
+      </div>
     </div>
-  </div>
 
-  <span class="f-count" id="f-count">46 routes</span>
-</div>
+    <div class="sb-section">
+      <label class="sb-label">Max hoogtemeters</label>
+      <div class="rg">
+        <input type="range" id="hm-sl" min="585" max="2214" value="2214" step="1" />
+        <span class="rg-val" id="hm-val">2214 hm</span>
+      </div>
+    </div>
 
-<!-- ── ROUTE GRID ─────────────────────────────── -->
-<div class="content">
-  <div class="grid" id="grid"></div>
+    <div class="sb-section">
+      <label class="sb-label">Moeilijkheid</label>
+      <div class="pills">
+        <button class="pill pill-all on" data-d="all">Alles</button>
+        <button class="pill pill-easy"   data-d="easy">Makkelijk</button>
+        <button class="pill pill-mod"    data-d="mod">Gemiddeld</button>
+        <button class="pill pill-hard"   data-d="hard">Uitdagend</button>
+        <button class="pill pill-epic"   data-d="epic">Episch</button>
+      </div>
+    </div>
+
+    <div class="sb-footer">
+      <span id="f-count">46 routes</span>
+    </div>
+
+  </aside>
+
+  <!-- ── MAIN ──────────────────────────────── -->
+  <main class="main">
+
+    <div class="main-bar">
+      <span class="main-count" id="main-count">46 routes</span>
+      <div class="view-btns">
+        <button class="vbtn on" data-view="card" title="Kaartweergave">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <rect x="1" y="1" width="5" height="5" rx="1" fill="currentColor"/>
+            <rect x="8" y="1" width="5" height="5" rx="1" fill="currentColor"/>
+            <rect x="1" y="8" width="5" height="5" rx="1" fill="currentColor"/>
+            <rect x="8" y="8" width="5" height="5" rx="1" fill="currentColor"/>
+          </svg>
+        </button>
+        <button class="vbtn" data-view="list" title="Lijstweergave">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <rect x="1" y="2" width="12" height="2" rx="1" fill="currentColor"/>
+            <rect x="1" y="6" width="12" height="2" rx="1" fill="currentColor"/>
+            <rect x="1" y="10" width="12" height="2" rx="1" fill="currentColor"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div id="grid"></div>
+
+  </main>
+
 </div>
 
 <!-- ── MODAL ──────────────────────────────────── -->
@@ -556,10 +555,10 @@
 </div>
 
 <script>
-// ── DATA (loaded from routes.json) ───────────────────────────────────────
+// ── DATA ─────────────────────────────────────────────────────────────────
 let ROUTES = [];
 
-// ── HELPERS ─────────────────────────────────────────────────────────────
+// ── HELPERS ──────────────────────────────────────────────────────────────
 function diffGroup(cat) {
   if (cat <= 1) return 'easy';
   if (cat <= 3) return 'mod';
@@ -592,28 +591,47 @@ function decodePoly(enc) {
   return pts;
 }
 
-// ── STATE ────────────────────────────────────────────────────────────────
-const S = { search:'', maxKm:144, maxHm:2214, diff:'all' };
+// ── STATE ─────────────────────────────────────────────────────────────────
+const S = { search:'', maxKm:144, maxHm:2214, diff:'all', sort:'id', view:'card' };
 
-function filtered() {
+function filteredSorted() {
   const q = S.search.toLowerCase();
-  return ROUTES.filter(r => {
+  let list = ROUTES.filter(r => {
     if (q && !r.name.toLowerCase().includes(q) && !r.en.toLowerCase().includes(q)) return false;
-    if (r.km  > S.maxKm)  return false;
-    if (r.hm  > S.maxHm)  return false;
+    if (r.km > S.maxKm) return false;
+    if (r.hm > S.maxHm) return false;
     if (S.diff !== 'all' && diffGroup(r.cat) !== S.diff) return false;
     return true;
   });
+
+  list.sort((a, b) => {
+    switch (S.sort) {
+      case 'km-asc':    return a.km - b.km;
+      case 'km-desc':   return b.km - a.km;
+      case 'hm-asc':    return a.hm - b.hm;
+      case 'hm-desc':   return b.hm - a.hm;
+      case 'diff-asc':  return a.cat - b.cat;
+      case 'diff-desc': return b.cat - a.cat;
+      case 'name':      return a.name.localeCompare(b.name, 'nl');
+      default:          return a.id - b.id;
+    }
+  });
+
+  return list;
 }
 
-// ── RENDER ───────────────────────────────────────────────────────────────
+// ── RENDER ────────────────────────────────────────────────────────────────
 function render() {
-  const list = filtered();
-  document.getElementById('f-count').textContent = `${list.length} route${list.length !== 1 ? 's' : ''}`;
-  document.getElementById('hdr-count').textContent = list.length;
+  const list = filteredSorted();
+  const countTxt = `${list.length} route${list.length !== 1 ? 's' : ''}`;
+  document.getElementById('f-count').textContent   = countTxt;
+  document.getElementById('main-count').textContent = countTxt;
+  document.getElementById('hdr-count').textContent  = list.length;
 
   const grid = document.getElementById('grid');
+
   if (!list.length) {
+    grid.className = '';
     grid.innerHTML = `<div class="empty">
       <div class="empty-ico">🔍</div>
       <h3>Geen routes gevonden</h3>
@@ -622,46 +640,72 @@ function render() {
     return;
   }
 
-  grid.innerHTML = list.map(r => {
-    const color = diffHex(r.cat);
-    const lbl   = diffLabel(r.cat);
-    const extLabel = r.url ? (r.url.includes('garmin') ? 'Garmin' : 'Strava') : '';
-    return `
-    <div class="card" onclick="openModal(${r.id})">
-      <div class="card-stripe" style="background:${color}"></div>
-      <div class="card-top">
-        <span class="c-num">#${r.id}</span>
-        <span class="c-badge" style="background:${color}">${lbl}</span>
-      </div>
-      <div class="c-name">${r.name}</div>
-      <div class="c-name-en">${r.en}</div>
-      <div class="c-stats">
-        <div class="cst">
-          <span class="cst-ico">📏</span>
-          <span class="cst-val">${r.km}</span><span class="cst-unit">&thinsp;km</span>
+  if (S.view === 'list') {
+    grid.className = 'list';
+    grid.innerHTML = list.map(r => {
+      const color = diffHex(r.cat);
+      const lbl   = diffLabel(r.cat);
+      return `
+      <div class="list-row" onclick="openModal(${r.id})">
+        <div class="lr-stripe" style="background:${color}"></div>
+        <span class="lr-num">#${r.id}</span>
+        <div class="lr-name">
+          <div class="lr-name-nl">${r.name}</div>
+          <div class="lr-name-en">${r.en}</div>
         </div>
-        <div class="cst">
-          <span class="cst-ico">⛰️</span>
-          <span class="cst-val">${r.hm}</span><span class="cst-unit">&thinsp;hm</span>
+        <div class="lr-stat">${r.km}<span> km</span></div>
+        <div class="lr-stat">${r.hm}<span> hm</span></div>
+        <span class="lr-badge" style="background:${color}">${lbl}</span>
+        <div class="lr-arrow">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M4.5 2.5L8 6l-3.5 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
         </div>
-      </div>
-      <div class="c-footer">
-        ${r.url ? `<span class="c-ext">
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"/></svg>
-          ${extLabel}
-        </span>` : '<span class="c-ext">📍</span>'}
-        <span class="c-hint">Klik voor kaart →</span>
-      </div>
-    </div>`;
-  }).join('');
+      </div>`;
+    }).join('');
+  } else {
+    grid.className = 'grid';
+    grid.innerHTML = list.map(r => {
+      const color    = diffHex(r.cat);
+      const lbl      = diffLabel(r.cat);
+      const extLabel = r.url ? (r.url.includes('garmin') ? 'Garmin' : 'Strava') : '';
+      return `
+      <div class="card" onclick="openModal(${r.id})">
+        <div class="card-stripe" style="background:${color}"></div>
+        <div class="card-top">
+          <span class="c-num">#${r.id}</span>
+          <span class="c-badge" style="background:${color}">${lbl}</span>
+        </div>
+        <div class="c-name">${r.name}</div>
+        <div class="c-name-en">${r.en}</div>
+        <div class="c-stats">
+          <div class="cst">
+            <span class="cst-ico">📏</span>
+            <span class="cst-val">${r.km}</span><span class="cst-unit">&thinsp;km</span>
+          </div>
+          <div class="cst">
+            <span class="cst-ico">⛰️</span>
+            <span class="cst-val">${r.hm}</span><span class="cst-unit">&thinsp;hm</span>
+          </div>
+        </div>
+        <div class="c-footer">
+          ${r.url ? `<span class="c-ext">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"/></svg>
+            ${extLabel}
+          </span>` : '<span class="c-ext">📍</span>'}
+          <span class="c-hint">Klik voor kaart →</span>
+        </div>
+      </div>`;
+    }).join('');
+  }
 }
 
-// ── SLIDER FILL ──────────────────────────────────────────────────────────
+// ── SLIDER FILL ───────────────────────────────────────────────────────────
 function setFill(el, val, min, max) {
   el.style.setProperty('--pct', ((val - min) / (max - min) * 100) + '%');
 }
 
-// ── MODAL ────────────────────────────────────────────────────────────────
+// ── MODAL ─────────────────────────────────────────────────────────────────
 let rMap = null;
 
 function openModal(id) {
@@ -675,8 +719,8 @@ function openModal(id) {
   document.getElementById('m-hm').textContent    = r.hm;
 
   const dEl = document.getElementById('m-diff');
-  dEl.textContent  = diffLabel(r.cat);
-  dEl.style.color  = diffColor(r.cat);
+  dEl.textContent = diffLabel(r.cat);
+  dEl.style.color = diffColor(r.cat);
 
   const lnk  = document.getElementById('m-link');
   const llbl = document.getElementById('m-link-lbl');
@@ -711,26 +755,18 @@ function initMap(r) {
   }).addTo(rMap);
 
   const statusEl = document.getElementById('map-status');
-
-  // Use pre-fetched polyline stored in routes.json (via admin)
   const pts = r.poly ? decodePoly(r.poly) : null;
 
   if (pts && pts.length > 1) {
-    // ── STORED POLYLINE ──────────────────────────────────────────────────
     statusEl.textContent = '✓ Exacte route';
+    const line = L.polyline(pts, { color: '#E8501A', weight: 3, opacity: .9 }).addTo(rMap);
 
-    const line = L.polyline(pts, {
-      color: '#E8501A', weight: 3, opacity: .9
-    }).addTo(rMap);
-
-    // Start marker
     const startIcon = L.divIcon({
       html: `<div style="background:#22C55E;color:#fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3)">S</div>`,
       className:'', iconSize:[26,26], iconAnchor:[13,13]
     });
     L.marker(pts[0], { icon: startIcon }).addTo(rMap).bindPopup('<b>Start</b><br>Calpe');
 
-    // End marker
     const endIcon = L.divIcon({
       html: `<div style="background:#E8501A;color:#fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3)">F</div>`,
       className:'', iconSize:[26,26], iconAnchor:[13,13]
@@ -740,14 +776,10 @@ function initMap(r) {
     rMap.fitBounds(line.getBounds(), { padding: [24, 24] });
 
   } else {
-    // ── APPROXIMATE WAYPOINTS FALLBACK ───────────────────────────────────
     statusEl.textContent = '📍 Vereenvoudigd — beheer exacte routes via /admin.html';
-
     const wp = r.wp;
     if (wp && wp.length) {
-      const line = L.polyline(wp, {
-        color: '#E8501A', weight: 4, opacity: .7, dashArray: '10 5'
-      }).addTo(rMap);
+      const line = L.polyline(wp, { color: '#E8501A', weight: 4, opacity: .7, dashArray: '10 5' }).addTo(rMap);
 
       const startIcon = L.divIcon({
         html: `<div style="background:#22C55E;color:#fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3)">S</div>`,
@@ -771,9 +803,13 @@ function initMap(r) {
   }
 }
 
-// ── EVENT LISTENERS ──────────────────────────────────────────────────────
+// ── EVENT LISTENERS ───────────────────────────────────────────────────────
 document.getElementById('srch').addEventListener('input', e => {
   S.search = e.target.value; render();
+});
+
+document.getElementById('sort-sel').addEventListener('change', e => {
+  S.sort = e.target.value; render();
 });
 
 const kmSl = document.getElementById('km-sl');
@@ -793,7 +829,6 @@ hmSl.addEventListener('input', e => {
   render();
 });
 
-// Initialise slider fills
 setFill(kmSl, 144, 40, 144);
 setFill(hmSl, 2214, 585, 2214);
 
@@ -806,17 +841,24 @@ document.querySelectorAll('.pill').forEach(btn => {
   });
 });
 
-// Close overlay on background click
+document.querySelectorAll('.vbtn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.vbtn').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    S.view = btn.dataset.view;
+    render();
+  });
+});
+
 document.getElementById('overlay').addEventListener('click', e => {
   if (e.target.id === 'overlay') closeModal();
 });
 
-// Escape key
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeModal();
 });
 
-// ── INIT ─────────────────────────────────────────────────────────────────
+// ── INIT ──────────────────────────────────────────────────────────────────
 async function init() {
   try {
     const res = await fetch('./routes.json?t=' + Date.now());
