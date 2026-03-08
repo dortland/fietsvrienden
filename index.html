@@ -54,7 +54,7 @@
     .h-title p  { font-size: 11px; color: rgba(255,255,255,.4); margin-top: 2px; letter-spacing: .02em; }
     .h-stats { margin-left: auto; display: flex; gap: 28px; }
     .h-stat { text-align: right; }
-    .h-stat .n { font-size: 18px; font-weight: 700; color: var(--orange); display: block; letter-spacing: -.01em; }
+    .h-stat .n { font-size: 18px; font-weight: 700; color: #fff; display: block; letter-spacing: -.01em; }
     .h-stat .l { font-size: 10px; color: rgba(255,255,255,.35); display: block; text-transform: uppercase; letter-spacing: .06em; }
 
     /* ── LAYOUT ──────────────────────────────── */
@@ -109,25 +109,6 @@
       transition: border-color .2s, background .2s;
     }
     .search-box:focus { border-color: var(--orange); background: #fff; }
-
-    .sort-sel {
-      width: 100%;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 8px 11px;
-      font-size: 13px;
-      outline: none;
-      background: var(--bg);
-      color: var(--text);
-      cursor: pointer;
-      appearance: none;
-      -webkit-appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%237A7888' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 11px center;
-      padding-right: 28px;
-    }
-    .sort-sel:focus { border-color: var(--orange); }
 
     .rg { display: flex; align-items: center; gap: 8px; margin-top: 2px; }
     input[type=range] {
@@ -204,6 +185,24 @@
       text-transform: uppercase;
       color: var(--muted);
     }
+    .main-bar-right { display: flex; align-items: center; gap: 10px; }
+    .sort-mini {
+      border: none;
+      background: transparent;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted);
+      cursor: pointer;
+      outline: none;
+      appearance: none;
+      -webkit-appearance: none;
+      padding: 0 14px 0 0;
+      background-image: url("data:image/svg+xml,%3Csvg width='8' height='5' viewBox='0 0 8 5' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l3 3 3-3' stroke='%237A7888' stroke-width='1.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 2px center;
+    }
+    .sort-mini:focus, .sort-mini:hover { color: var(--text); }
+    .bar-divider { width: 1px; height: 18px; background: var(--border); }
     .view-btns { display: flex; gap: 4px; }
     .vbtn {
       width: 32px; height: 32px;
@@ -433,20 +432,6 @@
     </div>
 
     <div class="sb-section">
-      <label class="sb-label" for="sort-sel">Sorteren</label>
-      <select class="sort-sel" id="sort-sel">
-        <option value="id">Standaard</option>
-        <option value="km-asc">Afstand ↑ (kort eerst)</option>
-        <option value="km-desc">Afstand ↓ (lang eerst)</option>
-        <option value="hm-asc">Hoogtemeters ↑</option>
-        <option value="hm-desc">Hoogtemeters ↓</option>
-        <option value="diff-asc">Makkelijkst eerst</option>
-        <option value="diff-desc">Zwaarst eerst</option>
-        <option value="name">Naam A–Z</option>
-      </select>
-    </div>
-
-    <div class="sb-section">
       <label class="sb-label">Max afstand</label>
       <div class="rg">
         <input type="range" id="km-sl" min="40" max="144" value="144" step="1" />
@@ -484,7 +469,19 @@
 
     <div class="main-bar">
       <span class="main-count" id="main-count">46 routes</span>
-      <div class="view-btns">
+      <div class="main-bar-right">
+        <select class="sort-mini" id="sort-sel">
+          <option value="id">Standaard</option>
+          <option value="km-asc">Afstand ↑</option>
+          <option value="km-desc">Afstand ↓</option>
+          <option value="hm-asc">Hoogtemeters ↑</option>
+          <option value="hm-desc">Hoogtemeters ↓</option>
+          <option value="diff-asc">Makkelijkst eerst</option>
+          <option value="diff-desc">Zwaarst eerst</option>
+          <option value="name">Naam A–Z</option>
+        </select>
+        <div class="bar-divider"></div>
+        <div class="view-btns">
         <button class="vbtn on" data-view="card" title="Kaartweergave">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <rect x="1" y="1" width="5" height="5" rx="1" fill="currentColor"/>
@@ -500,6 +497,7 @@
             <rect x="1" y="10" width="12" height="2" rx="1" fill="currentColor"/>
           </svg>
         </button>
+        </div>
       </div>
     </div>
 
