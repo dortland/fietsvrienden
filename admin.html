@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — Calpe Fietsvrienden</title>
+  <style>
+    :root {
+      --orange: #C8511A; --orange-dark: #A84010;
+      --dark: #111320; --bg: #F6F4F0; --card: #FFFFFF;
+      --text: #1A1A28; --muted: #7A7888; --border: #E0DDD6;
+      --easy: #2E7D52; --moderate: #8B6414; --challenging: #B54A1A; --epic: #8B2222;
+      --green: #1E6640; --red: #9B1D1D;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; background:var(--bg); color:var(--text); font-size:14px; font-variant-numeric:tabular-nums; }
+
+    /* ── HEADER ─── */
+    .a-hdr {
+      height:60px; background:var(--dark); border-bottom:3px solid var(--orange);
+      display:flex; align-items:center; padding:0 28px; gap:12px;
+      position:sticky; top:0; z-index:300;
+    }
+    .ah-logo { width:28px; height:28px; opacity:.8; flex-shrink:0; }
+    .ah-sep  { width:1px; height:24px; background:rgba(255,255,255,.15); }
+    .ah-brand { font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:rgba(255,255,255,.5); }
+    .ah-tabs { display:flex; gap:2px; margin-left:20px; }
+    .ah-tab {
+      padding:6px 16px; border-radius:4px; border:none; cursor:pointer;
+      font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+      background:transparent; color:rgba(255,255,255,.4); transition:all .15s;
+    }
+    .ah-tab:hover { color:rgba(255,255,255,.7); }
+    .ah-tab.on { background:rgba(255,255,255,.1); color:#fff; }
+    .tab-count {
+      display:inline-flex; align-items:center; justify-content:center;
+      background:rgba(255,255,255,.15); color:rgba(255,255,255,.7);
+      border-radius:10px; font-size:10px; padding:1px 6px; margin-left:5px;
+    }
+    .ah-right { margin-left:auto; display:flex; align-items:center; gap:10px; }
+    .dirty-pill {
+      font-size:10px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+      color:var(--orange); display:none; align-items:center; gap:4px;
+    }
+    .dirty-pill.show { display:flex; }
+    .dirty-dot { width:6px; height:6px; border-radius:50%; background:var(--orange); }
+    .btn-publish {
+      padding:7px 18px; border-radius:4px; border:none; cursor:pointer;
+      font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+      background:var(--orange); color:#fff; transition:background .2s;
+    }
+    .btn-publish:hover { background:var(--orange-dark); }
+    .btn-publish:disabled { opacity:.5; cursor:default; }
+    .btn-publish.loading { background:#555; }
+    .btn-publish.ok { background:var(--green); }
+    .btn-publish.err { background:var(--red); }
+    .btn-icon {
+      width:34px; height:34px; border-radius:4px; border:1px solid rgba(255,255,255,.2);
+      background:transparent; color:rgba(255,255,255,.6); cursor:pointer;
+      display:flex; align-items:center; justify-content:center; transition:all .2s;
+      font-size:15px;
+    }
+    .btn-icon:hover { background:rgba(255,255,255,.1); color:#fff; }
+
+    /* ── CONTENT ─── */
+    .a-content { padding:28px 36px; max-width:1100px; margin:0 auto; }
+
+    /* ── TOOLBAR ─── */
+    .toolbar { display:flex; align-items:center; gap:10px; margin-bottom:20px; flex-wrap:wrap; }
+    .toolbar-right { margin-left:auto; display:flex; align-items:center; gap:8px; }
+    .poly-summary { font-size:11px; color:var(--muted); font-weight:600; letter-spacing:.04em; }
+
+    /* ── BUTTONS ─── */
+    .btn { padding:8px 16px; border-radius:4px; border:1px solid var(--border); background:var(--card); color:var(--text); font-size:11px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; cursor:pointer; transition:all .15s; display:inline-flex; align-items:center; gap:6px; }
+    .btn:hover { border-color:var(--text); }
+    .btn-primary { background:var(--dark); color:#fff; border-color:var(--dark); }
+    .btn-primary:hover { background:#2a2d3e; }
+    .btn-danger { color:var(--red); border-color:var(--red); }
+    .btn-danger:hover { background:var(--red); color:#fff; }
+    .btn-sm { padding:5px 10px; font-size:10px; }
+    .btn-strava { color:var(--orange); border-color:var(--orange); }
+    .btn-strava:hover { background:var(--orange); color:#fff; }
+
+    /* ── SEARCH ─── */
+    .admin-search {
+      border:1px solid var(--border); border-radius:4px; padding:7px 12px;
+      font-size:12px; background:var(--card); color:var(--text); outline:none; width:220px;
+    }
+    .admin-search:focus { border-color:var(--orange); }
+
+    /* ── TABLE ─── */
+    .r-table { width:100%; border-collapse:collapse; background:var(--card); border-radius:8px; border:1px solid var(--border); overflow:hidden; }
+    .r-table thead th {
+      padding:10px 14px; text-align:left; font-size:9px; font-weight:700;
+      letter-spacing:.1em; text-transform:uppercase; color:var(--muted);
+      border-bottom:1px solid var(--border); background:var(--bg);
+    }
+    .r-table thead th:first-child { width:50px; }
+    .r-table tbody tr { border-bottom:1px solid var(--border); transition:background .1s; position:relative; }
+    .r-table tbody tr:last-child { border-bottom:none; }
+    .r-table tbody tr:hover { background:#faf9f7; }
+    .r-table td { padding:11px 14px; vertical-align:middle; }
+    .td-id { font-size:10px; font-weight:700; color:var(--muted); letter-spacing:.06em; display:flex; align-items:center; gap:6px; }
+    .row-stripe { width:3px; height:22px; border-radius:2px; flex-shrink:0; }
+    .td-name { }
+    .td-name .nl { font-size:13px; font-weight:600; line-height:1.3; }
+    .td-name .en { font-size:11px; color:var(--muted); }
+    .td-stats { font-size:13px; font-weight:600; white-space:nowrap; }
+    .td-stats .unit { font-size:10px; color:var(--muted); font-weight:500; }
+    .td-badge { }
+    .diff-badge {
+      font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.08em;
+      padding:3px 8px; border-radius:3px; color:#fff; white-space:nowrap;
+    }
+    .td-poly .poly-ok  { color:var(--green); font-size:11px; font-weight:700; }
+    .td-poly .poly-no  { color:var(--muted); font-size:11px; }
+    .td-poly .poly-loading { color:var(--orange); font-size:11px; }
+    .td-poly .poly-err { color:var(--red); font-size:11px; }
+    .td-actions { display:flex; gap:6px; white-space:nowrap; }
+
+    /* ── EMPTY ─── */
+    .tbl-empty { padding:60px 20px; text-align:center; color:var(--muted); font-size:13px; }
+
+    /* ── STRAVA VIEW ─── */
+    .strava-layout { display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:start; }
+    @media(max-width:700px) { .strava-layout { grid-template-columns:1fr; } }
+    .s-card {
+      background:var(--card); border:1px solid var(--border); border-radius:8px; padding:20px;
+    }
+    .s-card h3 { font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin-bottom:14px; }
+    .s-token-row { display:flex; gap:8px; margin-bottom:10px; }
+    .s-token-input {
+      flex:1; border:1px solid var(--border); border-radius:4px; padding:9px 12px;
+      font-size:13px; font-family:monospace; background:var(--bg); outline:none;
+    }
+    .s-token-input:focus { border-color:var(--orange); background:#fff; }
+    .s-status { font-size:11px; color:var(--muted); min-height:16px; }
+    .s-status.ok { color:var(--green); } .s-status.err { color:var(--red); }
+    .s-poly-list { background:var(--card); border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+    .s-poly-list .s-pl-hdr {
+      padding:10px 14px; background:var(--bg); font-size:9px; font-weight:700;
+      letter-spacing:.1em; text-transform:uppercase; color:var(--muted);
+      border-bottom:1px solid var(--border); display:flex; gap:10px; align-items:center;
+    }
+    .s-pl-row {
+      display:flex; align-items:center; gap:10px; padding:9px 14px;
+      border-bottom:1px solid var(--border); font-size:12px;
+    }
+    .s-pl-row:last-child { border-bottom:none; }
+    .s-pl-id { width:32px; font-size:10px; font-weight:700; color:var(--muted); flex-shrink:0; }
+    .s-pl-name { flex:1; font-weight:500; }
+    .s-pl-status { font-size:10px; font-weight:700; white-space:nowrap; }
+    .s-pl-status.ok { color:var(--green); }
+    .s-pl-status.no { color:var(--muted); }
+    .s-pl-status.loading { color:var(--orange); }
+    .s-pl-status.err { color:var(--red); }
+    .progress-bar-wrap { height:4px; background:var(--border); border-radius:2px; margin-top:8px; }
+    .progress-bar { height:4px; background:var(--orange); border-radius:2px; transition:width .3s; }
+
+    /* ── OVERLAY / MODAL ─── */
+    .overlay {
+      display:none; position:fixed; inset:0;
+      background:rgba(10,12,24,.65); backdrop-filter:blur(6px);
+      z-index:1000; align-items:center; justify-content:center; padding:20px;
+    }
+    .overlay.open { display:flex; }
+    .modal {
+      background:var(--card); border-radius:10px; width:100%; max-width:560px;
+      max-height:90vh; overflow:hidden; box-shadow:0 24px 80px rgba(0,0,0,.4);
+      display:flex; flex-direction:column;
+    }
+    .m-head {
+      background:var(--dark); border-bottom:3px solid var(--orange); color:#fff;
+      padding:18px 22px; display:flex; align-items:center; justify-content:space-between; flex-shrink:0;
+    }
+    .m-head .m-title { font-size:14px; font-weight:700; }
+    .m-head .m-sub   { font-size:11px; color:rgba(255,255,255,.45); margin-top:2px; }
+    .m-close {
+      width:30px; height:30px; border-radius:4px; border:1px solid rgba(255,255,255,.2);
+      background:rgba(255,255,255,.08); color:rgba(255,255,255,.7); cursor:pointer;
+      font-size:15px; display:flex; align-items:center; justify-content:center; transition:all .2s;
+    }
+    .m-close:hover { background:rgba(255,255,255,.18); color:#fff; }
+    .m-body { padding:22px; overflow-y:auto; flex:1; }
+    .m-foot { padding:14px 22px; border-top:1px solid var(--border); display:flex; justify-content:flex-end; gap:10px; flex-shrink:0; }
+
+    /* ── FORM ─── */
+    .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .form-grid .full { grid-column:1/-1; }
+    .fg { display:flex; flex-direction:column; gap:5px; }
+    .fg label { font-size:9px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
+    .fg input, .fg textarea, .fg select {
+      border:1px solid var(--border); border-radius:4px; padding:8px 10px;
+      font-size:13px; background:var(--bg); color:var(--text); outline:none;
+      transition:border-color .2s, background .2s;
+    }
+    .fg input:focus, .fg textarea:focus, .fg select:focus { border-color:var(--orange); background:#fff; }
+    .fg textarea { resize:vertical; min-height:70px; font-family:monospace; font-size:12px; }
+    .fg .hint { font-size:10px; color:var(--muted); }
+    .cat-preview { display:inline-flex; align-items:center; gap:6px; margin-top:4px; }
+    .poly-section {
+      background:var(--bg); border:1px solid var(--border); border-radius:6px;
+      padding:14px 16px; margin-top:4px;
+    }
+    .poly-section h4 { font-size:9px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin-bottom:8px; }
+    .poly-info { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .poly-lbl { font-size:12px; flex:1; }
+    .poly-lbl.ok { color:var(--green); font-weight:600; }
+    .poly-lbl.no { color:var(--muted); }
+
+    /* ── GITHUB MODAL ─── */
+    .gh-modal { max-width:480px; }
+    .gh-hint { font-size:12px; color:var(--muted); line-height:1.6; margin-bottom:16px; }
+    .gh-hint a { color:var(--orange); }
+    .gh-test-result { font-size:12px; min-height:18px; margin-top:10px; }
+    .gh-test-result.ok { color:var(--green); }
+    .gh-test-result.err { color:var(--red); }
+    .gh-pages-link { font-size:12px; color:var(--orange); word-break:break-all; }
+
+    /* ── DEL MODAL ─── */
+    .del-modal { max-width:400px; }
+    .del-msg { font-size:14px; line-height:1.6; color:var(--text); }
+    .del-msg strong { color:var(--red); }
+
+    /* ── LOADING STATE ─── */
+    .loading-state { padding:60px 20px; text-align:center; color:var(--muted); }
+    .spin { width:24px; height:24px; border:2px solid var(--border); border-top-color:var(--orange); border-radius:50%; animation:spin .7s linear infinite; margin:0 auto 12px; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<!-- ── HEADER ─── -->
+<header class="a-hdr">
+  <svg class="ah-logo" viewBox="0 0 36 36" fill="none">
+    <circle cx="9" cy="25" r="6.5" stroke="white" stroke-width="2"/>
+    <circle cx="27" cy="25" r="6.5" stroke="white" stroke-width="2"/>
+    <circle cx="9"  cy="25" r="1.8" fill="white"/>
+    <circle cx="27" cy="25" r="1.8" fill="white"/>
+    <path d="M9 25 L18 10 L27 25" stroke="white" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M18 10 L23 18" stroke="white" stroke-width="2" stroke-linecap="round"/>
+    <path d="M15 18 L27 18" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+    <circle cx="18" cy="9.5" r="2" fill="white"/>
+  </svg>
+  <div class="ah-sep"></div>
+  <span class="ah-brand">Admin</span>
+  <nav class="ah-tabs">
+    <button class="ah-tab on" data-v="routes" onclick="switchView('routes')">
+      Routes <span class="tab-count" id="tab-count">—</span>
+    </button>
+    <button class="ah-tab" data-v="strava" onclick="switchView('strava')">Strava</button>
+  </nav>
+  <div class="ah-right">
+    <span class="dirty-pill" id="dirty-pill"><span class="dirty-dot"></span> Niet gepubliceerd</span>
+    <button class="btn-publish" id="btn-publish" onclick="publish()">Publiceren</button>
+    <button class="btn-icon" onclick="openGhModal()" title="GitHub instellingen">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<!-- ── MAIN CONTENT ─── -->
+<div class="a-content" id="a-content">
+  <div class="loading-state"><div class="spin"></div>Routes laden…</div>
+</div>
+
+<!-- ── EDIT ROUTE MODAL ─── -->
+<div class="overlay" id="edit-overlay">
+  <div class="modal" style="max-width:600px">
+    <div class="m-head">
+      <div>
+        <div class="m-title" id="edit-title">Route bewerken</div>
+        <div class="m-sub" id="edit-sub"></div>
+      </div>
+      <button class="m-close" onclick="closeEdit()">✕</button>
+    </div>
+    <div class="m-body">
+      <form id="edit-form" onsubmit="return false">
+        <div class="form-grid">
+          <div class="fg">
+            <label>ID</label>
+            <input type="number" id="f-id" min="1" max="999" required />
+            <span class="hint">Uniek routenummer</span>
+          </div>
+          <div class="fg">
+            <label>Moeilijkheid (0–7)</label>
+            <input type="number" id="f-cat" min="0" max="7" required oninput="updateCatPreview()" />
+            <div class="cat-preview">
+              <span class="diff-badge" id="cat-badge" style="background:#aaa">—</span>
+              <span id="cat-hint" style="font-size:11px;color:var(--muted)">0–1 Makkelijk · 2–3 Gemiddeld · 4–5 Uitdagend · 6–7 Episch</span>
+            </div>
+          </div>
+          <div class="fg full">
+            <label>Nederlandse naam</label>
+            <input type="text" id="f-name" required />
+          </div>
+          <div class="fg full">
+            <label>Engelse naam (Strava naam)</label>
+            <input type="text" id="f-en" />
+          </div>
+          <div class="fg">
+            <label>Afstand (km)</label>
+            <input type="number" id="f-km" min="1" max="500" step="0.5" required />
+          </div>
+          <div class="fg">
+            <label>Hoogtemeters (hm)</label>
+            <input type="number" id="f-hm" min="0" max="9999" required />
+          </div>
+          <div class="fg full">
+            <label>Strava of Garmin URL (optioneel)</label>
+            <input type="url" id="f-url" placeholder="https://www.strava.com/routes/…" />
+          </div>
+
+          <div class="fg full">
+            <div class="poly-section">
+              <h4>Kaart — Polyline</h4>
+              <div class="poly-info">
+                <span class="poly-lbl" id="poly-lbl">—</span>
+                <button type="button" class="btn btn-sm btn-strava" id="poly-fetch-btn" onclick="fetchPolyEdit()">Ophalen van Strava</button>
+                <button type="button" class="btn btn-sm btn-danger" id="poly-clear-btn" onclick="clearPolyEdit()" style="display:none">Verwijderen</button>
+              </div>
+              <div id="poly-fetch-status" style="font-size:11px;color:var(--muted);margin-top:6px;min-height:14px"></div>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="m-foot">
+      <button class="btn" onclick="closeEdit()">Annuleren</button>
+      <button class="btn btn-primary" onclick="saveEdit()">Route opslaan</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── GITHUB SETTINGS MODAL ─── -->
+<div class="overlay" id="gh-overlay">
+  <div class="modal gh-modal">
+    <div class="m-head">
+      <div>
+        <div class="m-title">GitHub instellingen</div>
+        <div class="m-sub">Voor publiceren naar GitHub Pages</div>
+      </div>
+      <button class="m-close" onclick="closeGhModal()">✕</button>
+    </div>
+    <div class="m-body">
+      <p class="gh-hint">
+        Maak een <a href="https://github.com/settings/tokens/new?scopes=repo&description=Calpe+Routes+Admin" target="_blank">Personal Access Token</a> aan met <strong>repo</strong>-rechten.
+        Vul hier je GitHub repository gegevens in om wijzigingen te publiceren.
+      </p>
+      <div class="form-grid">
+        <div class="fg">
+          <label>Gebruikersnaam (owner)</label>
+          <input type="text" id="gh-owner" placeholder="jouwgebruikersnaam" autocomplete="off" />
+        </div>
+        <div class="fg">
+          <label>Repository naam</label>
+          <input type="text" id="gh-repo" placeholder="calpe-routes" autocomplete="off" />
+        </div>
+        <div class="fg">
+          <label>Branch</label>
+          <input type="text" id="gh-branch" placeholder="main" autocomplete="off" />
+        </div>
+        <div class="fg">
+          <label>&nbsp;</label>
+          <div style="font-size:11px;color:var(--muted);padding-top:6px">
+            GitHub Pages URL:<br>
+            <span class="gh-pages-link" id="gh-pages-url">—</span>
+          </div>
+        </div>
+        <div class="fg full">
+          <label>Personal Access Token</label>
+          <input type="password" id="gh-token" placeholder="ghp_…" autocomplete="off" />
+        </div>
+      </div>
+      <div class="gh-test-result" id="gh-test-result"></div>
+    </div>
+    <div class="m-foot">
+      <button class="btn" onclick="testGhConnection()">Verbinding testen</button>
+      <button class="btn btn-primary" onclick="saveGhSettings()">Opslaan</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── DELETE CONFIRM MODAL ─── -->
+<div class="overlay" id="del-overlay">
+  <div class="modal del-modal">
+    <div class="m-head">
+      <div><div class="m-title">Route verwijderen</div></div>
+      <button class="m-close" onclick="closeDelModal()">✕</button>
+    </div>
+    <div class="m-body">
+      <p class="del-msg" id="del-msg">Weet je zeker dat je deze route wilt verwijderen? <strong>Dit kan niet ongedaan worden gemaakt.</strong></p>
+    </div>
+    <div class="m-foot">
+      <button class="btn" onclick="closeDelModal()">Annuleren</button>
+      <button class="btn btn-danger" id="del-confirm-btn">Verwijderen</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── STATE ──────────────────────────────────────────────────────────────────
+let ROUTES = [];
+let GH_SHA = null;
+let DIRTY = false;
+let VIEW = 'routes';
+let EDIT_ID = null;       // null = new route, number = existing id
+let EDIT_POLY = null;     // poly for route being edited
+let DEL_ID = null;
+let STRAVA_TOKEN = localStorage.getItem('strava_token') || '';
+const POLY_STATUS = {};   // id → 'idle'|'loading'|'ok'|'err'
+let SEARCH_Q = '';
+
+// ── DIFF HELPERS ───────────────────────────────────────────────────────────
+function diffGroup(cat) { return cat<=1?'easy':cat<=3?'mod':cat<=5?'hard':'epic'; }
+function diffLabel(cat) { return {easy:'Makkelijk',mod:'Gemiddeld',hard:'Uitdagend',epic:'Episch'}[diffGroup(cat)]; }
+function diffHex(cat)   { return {easy:'#2E7D52',mod:'#8B6414',hard:'#B54A1A',epic:'#8B2222'}[diffGroup(cat)]; }
+
+// ── GITHUB CONFIG ──────────────────────────────────────────────────────────
+function getGhCfg() {
+  return {
+    owner:  localStorage.getItem('gh_owner')  || '',
+    repo:   localStorage.getItem('gh_repo')   || '',
+    branch: localStorage.getItem('gh_branch') || 'main',
+    token:  localStorage.getItem('gh_token')  || '',
+  };
+}
+function ghHeaders() {
+  const { token } = getGhCfg();
+  return { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' };
+}
+function ghContentsUrl(path) {
+  const { owner, repo } = getGhCfg();
+  return `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
+}
+
+// ── LOAD ROUTES ────────────────────────────────────────────────────────────
+async function loadRoutes() {
+  try {
+    const res = await fetch('./routes.json?t=' + Date.now());
+    if (!res.ok) throw new Error();
+    ROUTES = await res.json();
+    // Init poly status
+    ROUTES.forEach(r => { POLY_STATUS[r.id] = r.poly ? 'ok' : 'idle'; });
+    return true;
+  } catch { return false; }
+}
+
+// Load the SHA from GitHub (needed to update the file later)
+async function loadGhSha() {
+  const cfg = getGhCfg();
+  if (!cfg.token || !cfg.owner || !cfg.repo) return;
+  try {
+    const res = await fetch(`${ghContentsUrl('routes.json')}?ref=${cfg.branch}`, { headers: ghHeaders() });
+    if (res.ok) { const d = await res.json(); GH_SHA = d.sha; }
+  } catch {}
+}
+
+// ── PUBLISH TO GITHUB ──────────────────────────────────────────────────────
+async function publish() {
+  const cfg = getGhCfg();
+  if (!cfg.token || !cfg.owner || !cfg.repo) {
+    openGhModal();
+    document.getElementById('gh-test-result').textContent = 'Stel GitHub in om te publiceren.';
+    document.getElementById('gh-test-result').className = 'gh-test-result err';
+    return;
+  }
+
+  const btn = document.getElementById('btn-publish');
+  btn.textContent = 'Publiceren…'; btn.className = 'btn-publish loading'; btn.disabled = true;
+
+  try {
+    const json = JSON.stringify(ROUTES, null, 2);
+    // Proper UTF-8 → base64 encoding
+    const bytes = new TextEncoder().encode(json);
+    const binary = Array.from(bytes, b => String.fromCharCode(b)).join('');
+    const content = btoa(binary);
+
+    const body = { message: `Update routes — ${new Date().toLocaleDateString('nl-NL')}`, content, branch: cfg.branch };
+    if (GH_SHA) body.sha = GH_SHA;
+
+    const res = await fetch(ghContentsUrl('routes.json'), { method:'PUT', headers: ghHeaders(), body: JSON.stringify(body) });
+    if (!res.ok) { const e = await res.json(); throw new Error(e.message || 'Fout'); }
+
+    const data = await res.json();
+    GH_SHA = data.content.sha;
+    DIRTY = false;
+    updateDirtyUI();
+    btn.textContent = '✓ Gepubliceerd'; btn.className = 'btn-publish ok';
+    setTimeout(() => { btn.textContent = 'Publiceren'; btn.className = 'btn-publish'; btn.disabled = false; }, 3000);
+  } catch (e) {
+    btn.textContent = '✗ Mislukt'; btn.className = 'btn-publish err';
+    setTimeout(() => { btn.textContent = 'Publiceren'; btn.className = 'btn-publish'; btn.disabled = false; }, 3000);
+    alert('Publiceren mislukt: ' + e.message);
+  }
+}
+
+// ── DIRTY STATE ────────────────────────────────────────────────────────────
+function setDirty()   { DIRTY = true;  updateDirtyUI(); }
+function clearDirty() { DIRTY = false; updateDirtyUI(); }
+function updateDirtyUI() {
+  document.getElementById('dirty-pill').classList.toggle('show', DIRTY);
+}
+
+// ── SWITCH VIEW ────────────────────────────────────────────────────────────
+function switchView(v) {
+  VIEW = v;
+  document.querySelectorAll('.ah-tab').forEach(t => t.classList.toggle('on', t.dataset.v === v));
+  if (v === 'routes') renderRoutes();
+  else renderStrava();
+}
+
+// ── ROUTES VIEW ────────────────────────────────────────────────────────────
+function renderRoutes() {
+  const q = SEARCH_Q.toLowerCase();
+  const list = ROUTES.filter(r => !q || r.name.toLowerCase().includes(q) || r.en.toLowerCase().includes(q) || String(r.id).includes(q));
+  const polyCount = ROUTES.filter(r => r.poly).length;
+
+  document.getElementById('tab-count').textContent = ROUTES.length;
+  document.getElementById('a-content').innerHTML = `
+    <div class="toolbar">
+      <button class="btn btn-primary" onclick="openEdit(null)">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 5v14M5 12h14"/></svg>
+        Route toevoegen
+      </button>
+      <input class="admin-search" type="text" placeholder="Zoeken…" value="${SEARCH_Q}" oninput="SEARCH_Q=this.value;renderRoutes()" />
+      <div class="toolbar-right">
+        <span class="poly-summary">${polyCount}/${ROUTES.length} kaarten opgeslagen</span>
+      </div>
+    </div>
+    <table class="r-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Route</th>
+          <th>Afstand</th>
+          <th>Moeilijkheid</th>
+          <th>Kaart</th>
+          <th>Acties</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${list.length ? list.map(r => routeRow(r)).join('') : `<tr><td colspan="6"><div class="tbl-empty">Geen routes gevonden</div></td></tr>`}
+      </tbody>
+    </table>`;
+}
+
+function routeRow(r) {
+  const color = diffHex(r.cat);
+  const polyStatus = r.poly ? '<span class="poly-ok">✓ Opgeslagen</span>' : '<span class="poly-no">— Ontbreekt</span>';
+  const loadingPoly = POLY_STATUS[r.id] === 'loading';
+  const polyCell = loadingPoly ? '<span class="poly-loading">⟳ Ophalen…</span>' : polyStatus;
+  return `
+    <tr>
+      <td class="td-id">
+        <div class="row-stripe" style="background:${color}"></div>
+        #${r.id}
+      </td>
+      <td class="td-name">
+        <div class="nl">${r.name}</div>
+        <div class="en">${r.en}</div>
+      </td>
+      <td class="td-stats">${r.km}<span class="unit"> km</span> &nbsp; ${r.hm}<span class="unit"> hm</span></td>
+      <td class="td-badge"><span class="diff-badge" style="background:${color}">${diffLabel(r.cat)}</span></td>
+      <td class="td-poly">${polyCell}</td>
+      <td class="td-actions">
+        <button class="btn btn-sm" onclick="openEdit(${r.id})">✏ Bewerken</button>
+        <button class="btn btn-sm btn-danger" onclick="openDelModal(${r.id})">🗑</button>
+      </td>
+    </tr>`;
+}
+
+// ── STRAVA VIEW ────────────────────────────────────────────────────────────
+function renderStrava() {
+  const stravaRoutes = ROUTES.filter(r => r.url && r.url.includes('strava.com'));
+  const withPoly = stravaRoutes.filter(r => r.poly).length;
+  const pct = stravaRoutes.length ? Math.round(withPoly / stravaRoutes.length * 100) : 0;
+
+  document.getElementById('a-content').innerHTML = `
+    <div class="strava-layout">
+      <div class="s-card">
+        <h3>Strava Access Token</h3>
+        <div class="s-token-row">
+          <input class="s-token-input" type="password" id="s-token-input" value="${STRAVA_TOKEN}" placeholder="Strava Access Token (bijv. a1b2c3…)" autocomplete="off" />
+          <button class="btn btn-primary" onclick="saveStravaToken()">Opslaan</button>
+        </div>
+        <div class="s-status" id="s-token-status">${STRAVA_TOKEN ? '✓ Token opgeslagen' : 'Geen token ingesteld'}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:12px;line-height:1.6">
+          Haal je token op via <a href="https://www.strava.com/settings/api" target="_blank" style="color:var(--orange)">strava.com/settings/api</a>.<br>
+          Vereist: <strong>route:read</strong> scope.
+        </div>
+      </div>
+      <div class="s-card">
+        <h3>Polylines ophalen</h3>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.5">
+          ${withPoly}/${stravaRoutes.length} Strava routes hebben een opgeslagen polyline (${pct}%).
+        </div>
+        <div class="progress-bar-wrap"><div class="progress-bar" style="width:${pct}%"></div></div>
+        <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-strava" onclick="fetchAllPolys()">Alles ophalen (ontbrekende)</button>
+          <button class="btn btn-danger btn-sm" onclick="clearAllPolys()">Alle polylines wissen</button>
+        </div>
+        <div id="bulk-progress" style="font-size:11px;color:var(--muted);margin-top:8px;min-height:16px"></div>
+      </div>
+    </div>
+    <div style="margin-top:20px">
+      <div class="s-poly-list">
+        <div class="s-pl-hdr">
+          <span style="flex:1">Strava routes &amp; polyline status</span>
+        </div>
+        ${stravaRoutes.map(r => `
+          <div class="s-pl-row">
+            <span class="s-pl-id">#${r.id}</span>
+            <span class="s-pl-name">${r.name}</span>
+            <span class="s-pl-status ${r.poly ? 'ok' : (POLY_STATUS[r.id] === 'loading' ? 'loading' : (POLY_STATUS[r.id] === 'err' ? 'err' : 'no'))}" id="spl-${r.id}">
+              ${r.poly ? '✓ Opgeslagen' : (POLY_STATUS[r.id] === 'loading' ? '⟳ Ophalen…' : (POLY_STATUS[r.id] === 'err' ? '✗ Mislukt' : '— Ontbreekt'))}
+            </span>
+            <button class="btn btn-sm btn-strava" style="flex-shrink:0" onclick="fetchPolyById(${r.id})">${r.poly ? 'Vernieuwen' : 'Ophalen'}</button>
+          </div>
+        `).join('')}
+      </div>
+    </div>`;
+}
+
+// ── STRAVA POLY FETCH ──────────────────────────────────────────────────────
+function decodePoly(enc) {
+  const pts = []; let i=0,lat=0,lng=0;
+  while(i<enc.length){let b,s=0,r=0;do{b=enc.charCodeAt(i++)-63;r|=(b&31)<<s;s+=5;}while(b>=32);lat+=(r&1)?~(r>>1):r>>1;s=0;r=0;do{b=enc.charCodeAt(i++)-63;r|=(b&31)<<s;s+=5;}while(b>=32);lng+=(r&1)?~(r>>1):r>>1;pts.push([lat/1e5,lng/1e5]);}
+  return pts;
+}
+
+async function fetchPolyById(id) {
+  const route = ROUTES.find(r => r.id === id);
+  if (!route) return;
+  if (!STRAVA_TOKEN) { alert('Voer eerst een Strava token in op het Strava tabblad.'); return; }
+  const stravaId = route.url?.match(/strava\.com\/routes\/(\d+)/)?.[1];
+  if (!stravaId) { alert('Geen Strava URL voor deze route.'); return; }
+
+  POLY_STATUS[id] = 'loading';
+  if (VIEW === 'strava') updateStravaRow(id);
+  if (VIEW === 'routes') renderRoutes();
+
+  try {
+    const res = await fetch(`https://www.strava.com/api/v3/routes/${stravaId}`, {
+      headers: { 'Authorization': `Bearer ${STRAVA_TOKEN}` }
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const poly = data?.map?.polyline;
+    if (!poly) throw new Error('Geen polyline in respons');
+    route.poly = poly;
+    POLY_STATUS[id] = 'ok';
+    setDirty();
+  } catch (e) {
+    POLY_STATUS[id] = 'err';
+    console.error('Poly fetch failed for', id, e);
+  }
+
+  if (VIEW === 'strava') updateStravaRow(id);
+  if (VIEW === 'routes') renderRoutes();
+}
+
+function updateStravaRow(id) {
+  const route = ROUTES.find(r => r.id === id);
+  if (!route) return;
+  const el = document.getElementById(`spl-${id}`);
+  if (!el) return;
+  const st = POLY_STATUS[id];
+  el.className = `s-pl-status ${route.poly ? 'ok' : (st === 'loading' ? 'loading' : (st === 'err' ? 'err' : 'no'))}`;
+  el.textContent = route.poly ? '✓ Opgeslagen' : (st === 'loading' ? '⟳ Ophalen…' : (st === 'err' ? '✗ Mislukt' : '— Ontbreekt'));
+}
+
+async function fetchAllPolys() {
+  if (!STRAVA_TOKEN) { alert('Voer eerst een Strava token in.'); return; }
+  const todo = ROUTES.filter(r => r.url?.includes('strava.com') && !r.poly);
+  if (!todo.length) { alert('Alle Strava routes hebben al een opgeslagen polyline!'); return; }
+
+  const progEl = document.getElementById('bulk-progress');
+  let done = 0;
+  for (const r of todo) {
+    if (progEl) progEl.textContent = `${done}/${todo.length} opgehaald…`;
+    await fetchPolyById(r.id);
+    done++;
+    await new Promise(res => setTimeout(res, 300));
+  }
+  if (progEl) progEl.textContent = `✓ ${done} polylines opgehaald`;
+  renderStrava();
+}
+
+async function clearAllPolys() {
+  if (!confirm('Wil je alle opgeslagen polylines verwijderen? Je moet ze daarna opnieuw ophalen.')) return;
+  ROUTES.forEach(r => { r.poly = null; POLY_STATUS[r.id] = 'idle'; });
+  setDirty();
+  renderStrava();
+}
+
+// ── STRAVA TOKEN ───────────────────────────────────────────────────────────
+function saveStravaToken() {
+  const val = document.getElementById('s-token-input').value.trim();
+  STRAVA_TOKEN = val;
+  if (val) localStorage.setItem('strava_token', val);
+  else localStorage.removeItem('strava_token');
+  const st = document.getElementById('s-token-status');
+  st.textContent = val ? '✓ Token opgeslagen' : 'Token verwijderd';
+  st.className = 's-status ' + (val ? 'ok' : '');
+}
+
+// ── EDIT MODAL ─────────────────────────────────────────────────────────────
+function openEdit(id) {
+  EDIT_ID = id;
+  const r = id !== null ? ROUTES.find(r => r.id === id) : null;
+
+  document.getElementById('edit-title').textContent = r ? 'Route bewerken' : 'Route toevoegen';
+  document.getElementById('edit-sub').textContent   = r ? `#${r.id} — ${r.name}` : 'Nieuwe route';
+
+  document.getElementById('f-id').value   = r ? r.id   : nextId();
+  document.getElementById('f-cat').value  = r ? r.cat  : 2;
+  document.getElementById('f-name').value = r ? r.name : '';
+  document.getElementById('f-en').value   = r ? r.en   : '';
+  document.getElementById('f-km').value   = r ? r.km   : '';
+  document.getElementById('f-hm').value   = r ? r.hm   : '';
+  document.getElementById('f-url').value  = r?.url || '';
+
+  EDIT_POLY = r?.poly || null;
+  updatePolyUI();
+  updateCatPreview();
+  document.getElementById('edit-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeEdit() {
+  document.getElementById('edit-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+  EDIT_ID = null; EDIT_POLY = null;
+}
+
+function nextId() {
+  if (!ROUTES.length) return 1;
+  return Math.max(...ROUTES.map(r => r.id)) + 1;
+}
+
+function updateCatPreview() {
+  const cat = parseInt(document.getElementById('f-cat').value, 10);
+  const badge = document.getElementById('cat-badge');
+  if (!isNaN(cat) && cat >= 0 && cat <= 7) {
+    badge.textContent = diffLabel(cat);
+    badge.style.background = diffHex(cat);
+  } else {
+    badge.textContent = '—';
+    badge.style.background = '#aaa';
+  }
+}
+
+function updatePolyUI() {
+  const lbl = document.getElementById('poly-lbl');
+  const fetchBtn = document.getElementById('poly-fetch-btn');
+  const clearBtn = document.getElementById('poly-clear-btn');
+  const url = document.getElementById('f-url').value;
+  const isStrava = url.includes('strava.com/routes/');
+
+  if (EDIT_POLY) {
+    lbl.textContent = '✓ Opgeslagen';
+    lbl.className = 'poly-lbl ok';
+    clearBtn.style.display = 'inline-flex';
+    fetchBtn.textContent = 'Vernieuwen van Strava';
+  } else {
+    lbl.textContent = isStrava ? '— Nog niet opgehaald' : '— Geen Strava URL';
+    lbl.className = 'poly-lbl no';
+    clearBtn.style.display = 'none';
+    fetchBtn.textContent = 'Ophalen van Strava';
+  }
+  fetchBtn.style.display = isStrava ? 'inline-flex' : 'none';
+}
+
+async function fetchPolyEdit() {
+  const url = document.getElementById('f-url').value;
+  const stravaId = url?.match(/strava\.com\/routes\/(\d+)/)?.[1];
+  if (!stravaId) { alert('Geen geldige Strava URL ingevuld.'); return; }
+  if (!STRAVA_TOKEN) { alert('Stel eerst je Strava token in op het Strava tabblad.'); return; }
+
+  const st = document.getElementById('poly-fetch-status');
+  const btn = document.getElementById('poly-fetch-btn');
+  st.textContent = '⟳ Ophalen van Strava…'; btn.disabled = true;
+
+  try {
+    const res = await fetch(`https://www.strava.com/api/v3/routes/${stravaId}`, {
+      headers: { 'Authorization': `Bearer ${STRAVA_TOKEN}` }
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status + ' — controleer je token en URL');
+    const data = await res.json();
+    const poly = data?.map?.polyline;
+    if (!poly) throw new Error('Geen polyline in Strava respons');
+    EDIT_POLY = poly;
+    st.textContent = '✓ Polyline opgehaald (' + decodePoly(poly).length + ' punten)';
+    st.style.color = 'var(--green)';
+  } catch (e) {
+    st.textContent = '✗ Mislukt: ' + e.message;
+    st.style.color = 'var(--red)';
+  }
+
+  btn.disabled = false;
+  updatePolyUI();
+}
+
+function clearPolyEdit() {
+  EDIT_POLY = null;
+  document.getElementById('poly-fetch-status').textContent = '';
+  updatePolyUI();
+}
+
+function saveEdit() {
+  const id   = parseInt(document.getElementById('f-id').value, 10);
+  const cat  = parseInt(document.getElementById('f-cat').value, 10);
+  const name = document.getElementById('f-name').value.trim();
+  const en   = document.getElementById('f-en').value.trim();
+  const km   = parseFloat(document.getElementById('f-km').value);
+  const hm   = parseInt(document.getElementById('f-hm').value, 10);
+  const url  = document.getElementById('f-url').value.trim() || null;
+
+  if (!name || isNaN(km) || isNaN(hm) || isNaN(id) || isNaN(cat)) {
+    alert('Vul alle verplichte velden in (naam, km, hm, id, moeilijkheid).'); return;
+  }
+  if (cat < 0 || cat > 7) { alert('Moeilijkheid moet tussen 0 en 7 liggen.'); return; }
+
+  // Check for duplicate ID
+  if (EDIT_ID === null && ROUTES.find(r => r.id === id)) {
+    alert(`ID #${id} bestaat al. Kies een ander nummer.`); return;
+  }
+
+  const route = {
+    id, name, en, km, hm, cat, url,
+    wp: [[38.6446, 0.0439]],
+    poly: EDIT_POLY,
+  };
+
+  if (EDIT_ID !== null) {
+    // Update existing — preserve original wp if not changed
+    const orig = ROUTES.find(r => r.id === EDIT_ID);
+    if (orig) route.wp = orig.wp;
+    const idx = ROUTES.findIndex(r => r.id === EDIT_ID);
+    ROUTES[idx] = route;
+  } else {
+    ROUTES.push(route);
+    ROUTES.sort((a, b) => a.id - b.id);
+  }
+
+  POLY_STATUS[id] = route.poly ? 'ok' : 'idle';
+  setDirty();
+  closeEdit();
+  renderRoutes();
+}
+
+// ── DELETE MODAL ───────────────────────────────────────────────────────────
+function openDelModal(id) {
+  const r = ROUTES.find(r => r.id === id);
+  DEL_ID = id;
+  document.getElementById('del-msg').innerHTML =
+    `Weet je zeker dat je <strong>#${id} — ${r?.name}</strong> wilt verwijderen? <strong style="color:var(--red)">Dit kan niet ongedaan worden gemaakt.</strong>`;
+  document.getElementById('del-confirm-btn').onclick = confirmDelete;
+  document.getElementById('del-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeDelModal() {
+  document.getElementById('del-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+  DEL_ID = null;
+}
+function confirmDelete() {
+  if (DEL_ID === null) return;
+  ROUTES = ROUTES.filter(r => r.id !== DEL_ID);
+  setDirty();
+  closeDelModal();
+  renderRoutes();
+}
+
+// ── GITHUB MODAL ───────────────────────────────────────────────────────────
+function openGhModal() {
+  const cfg = getGhCfg();
+  document.getElementById('gh-owner').value  = cfg.owner;
+  document.getElementById('gh-repo').value   = cfg.repo;
+  document.getElementById('gh-branch').value = cfg.branch;
+  document.getElementById('gh-token').value  = cfg.token;
+  document.getElementById('gh-test-result').textContent = '';
+  updateGhPagesLink();
+  document.getElementById('gh-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeGhModal() {
+  document.getElementById('gh-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function updateGhPagesLink() {
+  const owner = document.getElementById('gh-owner').value.trim();
+  const repo  = document.getElementById('gh-repo').value.trim();
+  const el = document.getElementById('gh-pages-url');
+  if (owner && repo) {
+    const url = `https://${owner}.github.io/${repo}/`;
+    el.innerHTML = `<a href="${url}" target="_blank" style="color:var(--orange)">${url}</a>`;
+  } else { el.textContent = '—'; }
+}
+['gh-owner','gh-repo'].forEach(id => {
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById(id)?.addEventListener('input', updateGhPagesLink);
+  });
+});
+function saveGhSettings() {
+  const cfg = {
+    owner:  document.getElementById('gh-owner').value.trim(),
+    repo:   document.getElementById('gh-repo').value.trim(),
+    branch: document.getElementById('gh-branch').value.trim() || 'main',
+    token:  document.getElementById('gh-token').value.trim(),
+  };
+  localStorage.setItem('gh_owner', cfg.owner);
+  localStorage.setItem('gh_repo',  cfg.repo);
+  localStorage.setItem('gh_branch', cfg.branch);
+  localStorage.setItem('gh_token', cfg.token);
+  closeGhModal();
+  loadGhSha(); // refresh SHA
+}
+async function testGhConnection() {
+  const token = document.getElementById('gh-token').value.trim();
+  const owner = document.getElementById('gh-owner').value.trim();
+  const repo  = document.getElementById('gh-repo').value.trim();
+  const branch = document.getElementById('gh-branch').value.trim() || 'main';
+  const res_el = document.getElementById('gh-test-result');
+  res_el.textContent = '⟳ Verbinding testen…'; res_el.className = 'gh-test-result';
+
+  try {
+    const res = await fetch(`https://api.github.com/repos/${owner}/${repo}`, {
+      headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    res_el.textContent = `✓ Verbonden met ${data.full_name} (branch: ${branch})`;
+    res_el.className = 'gh-test-result ok';
+  } catch (e) {
+    res_el.textContent = '✗ Mislukt — controleer owner, repo en token';
+    res_el.className = 'gh-test-result err';
+  }
+}
+
+// ── OVERLAY CLOSE ON BG CLICK ──────────────────────────────────────────────
+['edit-overlay','gh-overlay','del-overlay'].forEach(id => {
+  document.getElementById(id).addEventListener('click', e => {
+    if (e.target.id === id) {
+      if (id === 'edit-overlay') closeEdit();
+      else if (id === 'gh-overlay') closeGhModal();
+      else if (id === 'del-overlay') closeDelModal();
+    }
+  });
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeEdit(); closeGhModal(); closeDelModal(); }
+});
+
+// ── INIT ───────────────────────────────────────────────────────────────────
+async function init() {
+  const ok = await loadRoutes();
+  if (!ok) {
+    document.getElementById('a-content').innerHTML =
+      `<div class="loading-state" style="color:var(--red)">⚠ Kon routes.json niet laden.<br><small>Controleer of de server actief is.</small></div>`;
+    return;
+  }
+  await loadGhSha();
+  renderRoutes();
+}
+
+init();
+</script>
+</body>
+</html>

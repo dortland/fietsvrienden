@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calpe Fietsvrienden — Routes</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    :root {
+      --orange: #C8511A;
+      --orange-dark: #A84010;
+      --orange-light: #FBF0EB;
+      --dark: #111320;
+      --bg: #F6F4F0;
+      --card: #FFFFFF;
+      --text: #1A1A28;
+      --muted: #7A7888;
+      --border: #E0DDD6;
+      --easy: #2E7D52;
+      --moderate: #8B6414;
+      --challenging: #B54A1A;
+      --epic: #8B2222;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ── HEADER ─────────────────────────────── */
+    .header {
+      background: var(--dark);
+      border-bottom: 3px solid var(--orange);
+      color: #fff;
+      padding: 0 36px;
+      height: 72px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .h-logo {
+      width: 36px; height: 36px;
+      opacity: .85;
+      flex-shrink: 0;
+    }
+    .h-divider {
+      width: 1px; height: 28px;
+      background: rgba(255,255,255,.15);
+    }
+    .h-title h1 {
+      font-size: 15px; font-weight: 700;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+    .h-title p {
+      font-size: 11px;
+      color: rgba(255,255,255,.4);
+      margin-top: 2px;
+      letter-spacing: .02em;
+    }
+    .h-stats { margin-left: auto; display: flex; gap: 28px; }
+    .h-stat { text-align: right; }
+    .h-stat .n {
+      font-size: 18px; font-weight: 700;
+      color: var(--orange); display: block;
+      letter-spacing: -.01em;
+    }
+    .h-stat .l {
+      font-size: 10px;
+      color: rgba(255,255,255,.35);
+      display: block;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    /* ── FILTER BAR ──────────────────────────── */
+    .fbar {
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      padding: 0 36px;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0;
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      box-shadow: 0 1px 4px rgba(0,0,0,.04);
+    }
+    .fsec {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 22px 12px 0;
+      margin-right: 22px;
+      border-right: 1px solid var(--border);
+    }
+    .fsec:last-of-type { border-right: none; }
+    .flabel {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .search-box {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 7px 12px;
+      font-size: 13px;
+      outline: none;
+      width: 190px;
+      background: var(--bg);
+      transition: border-color .2s, background .2s;
+      color: var(--text);
+    }
+    .search-box:focus { border-color: var(--orange); background: #fff; }
+
+    .rg { display: flex; align-items: center; gap: 8px; }
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 120px;
+      height: 3px;
+      border-radius: 2px;
+      outline: none;
+      cursor: pointer;
+      background: linear-gradient(to right,
+        var(--orange) var(--pct, 100%),
+        var(--border) var(--pct, 100%)
+      );
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: var(--orange);
+      border: 2px solid #fff;
+      box-shadow: 0 1px 4px rgba(0,0,0,.25);
+      cursor: pointer;
+    }
+    .rg-val {
+      font-size: 12px; font-weight: 600;
+      min-width: 52px;
+      color: var(--text);
+    }
+
+    .pills { display: flex; gap: 4px; }
+    .pill {
+      padding: 5px 12px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      cursor: pointer;
+      border: 1.5px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      transition: all .15s;
+    }
+    .pill:hover { border-color: currentColor; }
+    .pill.on {
+      background: var(--dark);
+      border-color: var(--dark);
+      color: #fff;
+    }
+    .pill-easy.on  { background: var(--easy);        border-color: var(--easy);        color: #fff; }
+    .pill-mod.on   { background: var(--moderate);    border-color: var(--moderate);    color: #fff; }
+    .pill-hard.on  { background: var(--challenging); border-color: var(--challenging); color: #fff; }
+    .pill-epic.on  { background: var(--epic);        border-color: var(--epic);        color: #fff; }
+    .pill-easy  { color: var(--easy); border-color: var(--easy); }
+    .pill-mod   { color: var(--moderate); border-color: var(--moderate); }
+    .pill-hard  { color: var(--challenging); border-color: var(--challenging); }
+    .pill-epic  { color: var(--epic); border-color: var(--epic); }
+
+    .f-count {
+      margin-left: auto;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+
+    /* ── LOADING SPINNER ── */
+    .spin {
+      width: 26px; height: 26px;
+      border: 2px solid var(--border);
+      border-top-color: var(--orange);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── GRID ────────────────────────────────── */
+    .content { padding: 28px 36px; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      gap: 16px;
+    }
+
+    /* ── CARD ────────────────────────────────── */
+    .card {
+      background: var(--card);
+      border-radius: 8px;
+      padding: 18px 18px 14px 22px;
+      cursor: pointer;
+      transition: transform .2s, box-shadow .2s;
+      border: 1px solid var(--border);
+      box-shadow: 0 1px 3px rgba(0,0,0,.05);
+      position: relative;
+      overflow: hidden;
+    }
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,.1);
+      border-color: var(--orange);
+    }
+    .card-stripe {
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      border-radius: 8px 0 0 8px;
+    }
+    .card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .c-num {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .c-badge {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      padding: 3px 8px;
+      border-radius: 3px;
+      color: #fff;
+    }
+    .c-name    { font-size: 14px; font-weight: 600; line-height: 1.35; margin-bottom: 2px; }
+    .c-name-en { font-size: 11px; color: var(--muted); margin-bottom: 14px; }
+    .c-stats   { display: flex; gap: 20px; align-items: baseline; }
+    .cst { display: flex; align-items: baseline; gap: 1px; }
+    .cst-ico { font-size: 12px; margin-right: 4px; opacity: .7; }
+    .cst-val  { font-size: 18px; font-weight: 700; letter-spacing: -.01em; }
+    .cst-unit { font-size: 11px; color: var(--muted); }
+    .c-footer {
+      margin-top: 14px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .c-ext {
+      display: flex; align-items: center; gap: 4px;
+      color: var(--orange); font-size: 10px; font-weight: 700;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+    .c-hint {
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    /* ── EMPTY ───────────────────────────────── */
+    .empty { grid-column: 1/-1; text-align: center; padding: 80px 20px; color: var(--muted); }
+    .empty-ico { font-size: 44px; margin-bottom: 16px; opacity: .5; }
+    .empty h3 { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 6px; letter-spacing: .02em; }
+    .empty p  { font-size: 13px; }
+
+    /* ── MODAL ───────────────────────────────── */
+    .overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(10,12,24,.65);
+      backdrop-filter: blur(6px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .overlay.open { display: flex; }
+    .modal {
+      background: var(--card);
+      border-radius: 12px;
+      width: 100%;
+      max-width: 680px;
+      max-height: 90vh;
+      overflow: hidden;
+      box-shadow: 0 24px 80px rgba(0,0,0,.4);
+      display: flex;
+      flex-direction: column;
+    }
+    .m-head {
+      background: var(--dark);
+      border-bottom: 3px solid var(--orange);
+      color: #fff;
+      padding: 22px 24px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+    .m-info { flex: 1; }
+    .m-nr {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.35);
+      margin-bottom: 6px;
+    }
+    .m-name { font-size: 19px; font-weight: 700; line-height: 1.2; margin-bottom: 4px; }
+    .m-en   { font-size: 12px; color: rgba(255,255,255,.5); letter-spacing: .02em; }
+    .m-close {
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.15);
+      color: rgba(255,255,255,.7);
+      border-radius: 6px;
+      width: 32px; height: 32px;
+      cursor: pointer;
+      font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .2s;
+      flex-shrink: 0;
+    }
+    .m-close:hover { background: rgba(255,255,255,.16); color: #fff; }
+    .m-body { padding: 22px 24px; overflow-y: auto; flex: 1; }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .sbox {
+      background: var(--bg);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      padding: 14px;
+      text-align: center;
+    }
+    .sbox-val  { font-size: 26px; font-weight: 700; line-height: 1; letter-spacing: -.02em; }
+    .sbox-unit { font-size: 11px; color: var(--muted); font-weight: 500; margin-left: 2px; }
+    .sbox-lbl  {
+      font-size: 9px; color: var(--muted); margin-top: 6px; display: block;
+      text-transform: uppercase; letter-spacing: .08em; font-weight: 600;
+    }
+
+    .map-wrap {
+      border-radius: 8px;
+      overflow: hidden;
+      height: 290px;
+      border: 1px solid var(--border);
+      position: relative;
+    }
+    #route-map { width: 100%; height: 100%; }
+    .map-note {
+      position: absolute;
+      bottom: 8px; left: 8px;
+      background: rgba(255,255,255,.92);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 4px 8px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: .04em;
+      color: var(--muted);
+      z-index: 1000;
+      pointer-events: none;
+    }
+
+    .m-actions { display: flex; gap: 10px; margin-top: 18px; }
+    .btn-strava {
+      flex: 1;
+      padding: 12px;
+      background: var(--orange); color: #fff;
+      border: none; border-radius: 6px;
+      font-size: 12px; font-weight: 700;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      cursor: pointer;
+      text-decoration: none;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      transition: background .2s;
+    }
+    .btn-strava:hover { background: var(--orange-dark); }
+    .btn-close {
+      padding: 12px 20px;
+      background: var(--bg); color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 12px; font-weight: 700;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .btn-close:hover { background: var(--border); }
+
+    /* ── RESPONSIVE ─────────────────────────── */
+    @media (max-width: 700px) {
+      .header { padding: 14px 16px; height: auto; }
+      .h-stats { display: none; }
+      .fbar { padding: 0 16px; flex-direction: column; align-items: flex-start; }
+      .fsec { padding: 8px 0; margin-right: 0; border-right: none; border-bottom: 1px solid var(--border); width: 100%; }
+      .fsec:last-of-type { border-bottom: none; }
+      .f-count { margin-left: 0; }
+      .content { padding: 16px; }
+      .grid { grid-template-columns: 1fr; }
+      .m-body { padding: 16px; }
+      .stats-row { gap: 8px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── HEADER ──────────────────────────────── -->
+<header class="header">
+  <svg class="h-logo" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="9" cy="25" r="6.5" stroke="white" stroke-width="2"/>
+    <circle cx="27" cy="25" r="6.5" stroke="white" stroke-width="2"/>
+    <circle cx="9"  cy="25" r="1.8" fill="white"/>
+    <circle cx="27" cy="25" r="1.8" fill="white"/>
+    <path d="M9 25 L18 10 L27 25" stroke="white" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M18 10 L23 18" stroke="white" stroke-width="2" stroke-linecap="round"/>
+    <path d="M15 18 L27 18" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+    <circle cx="18" cy="9.5" r="2" fill="white"/>
+  </svg>
+  <div class="h-divider"></div>
+  <div class="h-title">
+    <h1>Calpe Fietsvrienden</h1>
+    <p>Cycling routes vanuit Calpe, Costa Blanca</p>
+  </div>
+  <div class="h-stats">
+    <div class="h-stat">
+      <span class="n" id="hdr-count">46</span>
+      <span class="l">Getoond</span>
+    </div>
+    <div class="h-stat">
+      <span class="n">40–144</span>
+      <span class="l">km bereik</span>
+    </div>
+    <div class="h-stat">
+      <span class="n">585–2214</span>
+      <span class="l">hm bereik</span>
+    </div>
+  </div>
+</header>
+
+<!-- ── FILTER BAR ────────────────────────────── -->
+<div class="fbar">
+  <div class="fsec">
+    <span class="flabel">Zoeken</span>
+    <input class="search-box" id="srch" type="text" placeholder="Route naam…" autocomplete="off" />
+  </div>
+
+  <div class="fsec">
+    <span class="flabel">Max afstand</span>
+    <div class="rg">
+      <input type="range" id="km-sl" min="40" max="144" value="144" step="1" />
+      <span class="rg-val" id="km-val">144 km</span>
+    </div>
+  </div>
+
+  <div class="fsec">
+    <span class="flabel">Max hoogtemeters</span>
+    <div class="rg">
+      <input type="range" id="hm-sl" min="585" max="2214" value="2214" step="1" />
+      <span class="rg-val" id="hm-val">2214 hm</span>
+    </div>
+  </div>
+
+  <div class="fsec">
+    <span class="flabel">Moeilijkheid</span>
+    <div class="pills">
+      <button class="pill pill-all on"  data-d="all">Alles</button>
+      <button class="pill pill-easy"    data-d="easy">Makkelijk</button>
+      <button class="pill pill-mod"     data-d="mod">Gemiddeld</button>
+      <button class="pill pill-hard"    data-d="hard">Uitdagend</button>
+      <button class="pill pill-epic"    data-d="epic">Episch</button>
+    </div>
+  </div>
+
+  <span class="f-count" id="f-count">46 routes</span>
+</div>
+
+<!-- ── ROUTE GRID ─────────────────────────────── -->
+<div class="content">
+  <div class="grid" id="grid"></div>
+</div>
+
+<!-- ── MODAL ──────────────────────────────────── -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="m-head">
+      <div class="m-info">
+        <div class="m-nr"  id="m-nr">#1</div>
+        <div class="m-name" id="m-name">—</div>
+        <div class="m-en"   id="m-en">—</div>
+      </div>
+      <button class="m-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="m-body">
+      <div class="stats-row">
+        <div class="sbox">
+          <div><span class="sbox-val" id="m-km">—</span><span class="sbox-unit">km</span></div>
+          <span class="sbox-lbl">Afstand</span>
+        </div>
+        <div class="sbox">
+          <div><span class="sbox-val" id="m-hm">—</span><span class="sbox-unit">hm</span></div>
+          <span class="sbox-lbl">Hoogtemeters</span>
+        </div>
+        <div class="sbox">
+          <div><span class="sbox-val" id="m-diff" style="font-size:16px">—</span></div>
+          <span class="sbox-lbl">Moeilijkheid</span>
+        </div>
+      </div>
+
+      <div class="map-wrap">
+        <div id="route-map"></div>
+        <div class="map-note" id="map-status">📍 Vereenvoudigd routeoverzicht</div>
+      </div>
+
+      <div class="m-actions">
+        <a class="btn-strava" id="m-link" href="#" target="_blank" rel="noopener">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"/>
+          </svg>
+          <span id="m-link-lbl">Bekijk op Strava</span>
+        </a>
+        <button class="btn-close" onclick="closeModal()">Sluiten</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── DATA (loaded from routes.json) ───────────────────────────────────────
+let ROUTES = [];
+
+// ── HELPERS ─────────────────────────────────────────────────────────────
+function diffGroup(cat) {
+  if (cat <= 1) return 'easy';
+  if (cat <= 3) return 'mod';
+  if (cat <= 5) return 'hard';
+  return 'epic';
+}
+function diffLabel(cat) {
+  return { easy:'Makkelijk', mod:'Gemiddeld', hard:'Uitdagend', epic:'Episch' }[diffGroup(cat)];
+}
+function diffColor(cat) {
+  return { easy:'var(--easy)', mod:'var(--moderate)', hard:'var(--challenging)', epic:'var(--epic)' }[diffGroup(cat)];
+}
+function diffHex(cat) {
+  return { easy:'#2E7D52', mod:'#8B6414', hard:'#B54A1A', epic:'#8B2222' }[diffGroup(cat)];
+}
+
+// ── GOOGLE POLYLINE DECODER ───────────────────────────────────────────────
+function decodePoly(enc) {
+  const pts = [];
+  let i = 0, lat = 0, lng = 0;
+  while (i < enc.length) {
+    let b, s = 0, r = 0;
+    do { b = enc.charCodeAt(i++) - 63; r |= (b & 31) << s; s += 5; } while (b >= 32);
+    lat += (r & 1) ? ~(r >> 1) : r >> 1;
+    s = 0; r = 0;
+    do { b = enc.charCodeAt(i++) - 63; r |= (b & 31) << s; s += 5; } while (b >= 32);
+    lng += (r & 1) ? ~(r >> 1) : r >> 1;
+    pts.push([lat / 1e5, lng / 1e5]);
+  }
+  return pts;
+}
+
+// ── STATE ────────────────────────────────────────────────────────────────
+const S = { search:'', maxKm:144, maxHm:2214, diff:'all' };
+
+function filtered() {
+  const q = S.search.toLowerCase();
+  return ROUTES.filter(r => {
+    if (q && !r.name.toLowerCase().includes(q) && !r.en.toLowerCase().includes(q)) return false;
+    if (r.km  > S.maxKm)  return false;
+    if (r.hm  > S.maxHm)  return false;
+    if (S.diff !== 'all' && diffGroup(r.cat) !== S.diff) return false;
+    return true;
+  });
+}
+
+// ── RENDER ───────────────────────────────────────────────────────────────
+function render() {
+  const list = filtered();
+  document.getElementById('f-count').textContent = `${list.length} route${list.length !== 1 ? 's' : ''}`;
+  document.getElementById('hdr-count').textContent = list.length;
+
+  const grid = document.getElementById('grid');
+  if (!list.length) {
+    grid.innerHTML = `<div class="empty">
+      <div class="empty-ico">🔍</div>
+      <h3>Geen routes gevonden</h3>
+      <p>Pas de filters aan om routes te zien.</p>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = list.map(r => {
+    const color = diffHex(r.cat);
+    const lbl   = diffLabel(r.cat);
+    const extLabel = r.url ? (r.url.includes('garmin') ? 'Garmin' : 'Strava') : '';
+    return `
+    <div class="card" onclick="openModal(${r.id})">
+      <div class="card-stripe" style="background:${color}"></div>
+      <div class="card-top">
+        <span class="c-num">#${r.id}</span>
+        <span class="c-badge" style="background:${color}">${lbl}</span>
+      </div>
+      <div class="c-name">${r.name}</div>
+      <div class="c-name-en">${r.en}</div>
+      <div class="c-stats">
+        <div class="cst">
+          <span class="cst-ico">📏</span>
+          <span class="cst-val">${r.km}</span><span class="cst-unit">&thinsp;km</span>
+        </div>
+        <div class="cst">
+          <span class="cst-ico">⛰️</span>
+          <span class="cst-val">${r.hm}</span><span class="cst-unit">&thinsp;hm</span>
+        </div>
+      </div>
+      <div class="c-footer">
+        ${r.url ? `<span class="c-ext">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"/></svg>
+          ${extLabel}
+        </span>` : '<span class="c-ext">📍</span>'}
+        <span class="c-hint">Klik voor kaart →</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── SLIDER FILL ──────────────────────────────────────────────────────────
+function setFill(el, val, min, max) {
+  el.style.setProperty('--pct', ((val - min) / (max - min) * 100) + '%');
+}
+
+// ── MODAL ────────────────────────────────────────────────────────────────
+let rMap = null;
+
+function openModal(id) {
+  const r = ROUTES.find(x => x.id === id);
+  if (!r) return;
+
+  document.getElementById('m-nr').textContent   = `Route #${r.id}`;
+  document.getElementById('m-name').textContent  = r.name;
+  document.getElementById('m-en').textContent    = r.en;
+  document.getElementById('m-km').textContent    = r.km;
+  document.getElementById('m-hm').textContent    = r.hm;
+
+  const dEl = document.getElementById('m-diff');
+  dEl.textContent  = diffLabel(r.cat);
+  dEl.style.color  = diffColor(r.cat);
+
+  const lnk  = document.getElementById('m-link');
+  const llbl = document.getElementById('m-link-lbl');
+  if (r.url) {
+    lnk.href          = r.url;
+    lnk.style.display = 'flex';
+    llbl.textContent  = r.url.includes('garmin') ? 'Bekijk op Garmin' : 'Bekijk op Strava';
+  } else {
+    lnk.style.display = 'none';
+  }
+
+  document.getElementById('overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  setTimeout(() => initMap(r), 120);
+}
+
+function closeModal() {
+  document.getElementById('overlay').classList.remove('open');
+  document.body.style.overflow = '';
+  if (rMap) { rMap.remove(); rMap = null; }
+}
+
+function initMap(r) {
+  if (rMap) { rMap.remove(); rMap = null; }
+
+  rMap = L.map('route-map', { zoomControl: true, scrollWheelZoom: false });
+
+  L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+    maxZoom: 17,
+    attribution: '© <a href="https://opentopomap.org">OpenTopoMap</a> | © <a href="https://openstreetmap.org/copyright">OSM</a>'
+  }).addTo(rMap);
+
+  const statusEl = document.getElementById('map-status');
+
+  // Use pre-fetched polyline stored in routes.json (via admin)
+  const pts = r.poly ? decodePoly(r.poly) : null;
+
+  if (pts && pts.length > 1) {
+    // ── STORED POLYLINE ──────────────────────────────────────────────────
+    statusEl.textContent = '✓ Exacte route';
+
+    const line = L.polyline(pts, {
+      color: '#E8501A', weight: 3, opacity: .9
+    }).addTo(rMap);
+
+    // Start marker
+    const startIcon = L.divIcon({
+      html: `<div style="background:#22C55E;color:#fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3)">S</div>`,
+      className:'', iconSize:[26,26], iconAnchor:[13,13]
+    });
+    L.marker(pts[0], { icon: startIcon }).addTo(rMap).bindPopup('<b>Start</b><br>Calpe');
+
+    // End marker
+    const endIcon = L.divIcon({
+      html: `<div style="background:#E8501A;color:#fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3)">F</div>`,
+      className:'', iconSize:[26,26], iconAnchor:[13,13]
+    });
+    L.marker(pts[pts.length - 1], { icon: endIcon }).addTo(rMap).bindPopup('<b>Finish</b>');
+
+    rMap.fitBounds(line.getBounds(), { padding: [24, 24] });
+
+  } else {
+    // ── APPROXIMATE WAYPOINTS FALLBACK ───────────────────────────────────
+    statusEl.textContent = '📍 Vereenvoudigd — beheer exacte routes via /admin.html';
+
+    const wp = r.wp;
+    if (wp && wp.length) {
+      const line = L.polyline(wp, {
+        color: '#E8501A', weight: 4, opacity: .7, dashArray: '10 5'
+      }).addTo(rMap);
+
+      const startIcon = L.divIcon({
+        html: `<div style="background:#22C55E;color:#fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3)">S</div>`,
+        className:'', iconSize:[26,26], iconAnchor:[13,13]
+      });
+      L.marker(wp[0], { icon: startIcon }).addTo(rMap).bindPopup('<b>Start</b><br>Calpe');
+
+      for (let i = 1; i < wp.length; i++) {
+        const isLast = i === wp.length - 1;
+        const icon = L.divIcon({
+          html: `<div style="background:${isLast ? '#E8501A' : '#1A73E8'};color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;border:2px solid #fff;box-shadow:0 2px 4px rgba(0,0,0,.3)">${i}</div>`,
+          className:'', iconSize:[22,22], iconAnchor:[11,11]
+        });
+        L.marker(wp[i], { icon }).addTo(rMap);
+      }
+
+      rMap.fitBounds(line.getBounds(), { padding: [28, 28] });
+    } else {
+      rMap.setView([38.6446, 0.0439], 11);
+    }
+  }
+}
+
+// ── EVENT LISTENERS ──────────────────────────────────────────────────────
+document.getElementById('srch').addEventListener('input', e => {
+  S.search = e.target.value; render();
+});
+
+const kmSl = document.getElementById('km-sl');
+const hmSl = document.getElementById('hm-sl');
+
+kmSl.addEventListener('input', e => {
+  S.maxKm = +e.target.value;
+  document.getElementById('km-val').textContent = `${S.maxKm} km`;
+  setFill(kmSl, S.maxKm, 40, 144);
+  render();
+});
+
+hmSl.addEventListener('input', e => {
+  S.maxHm = +e.target.value;
+  document.getElementById('hm-val').textContent = `${S.maxHm} hm`;
+  setFill(hmSl, S.maxHm, 585, 2214);
+  render();
+});
+
+// Initialise slider fills
+setFill(kmSl, 144, 40, 144);
+setFill(hmSl, 2214, 585, 2214);
+
+document.querySelectorAll('.pill').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.pill').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    S.diff = btn.dataset.d;
+    render();
+  });
+});
+
+// Close overlay on background click
+document.getElementById('overlay').addEventListener('click', e => {
+  if (e.target.id === 'overlay') closeModal();
+});
+
+// Escape key
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+});
+
+// ── INIT ─────────────────────────────────────────────────────────────────
+async function init() {
+  try {
+    const res = await fetch('./routes.json?t=' + Date.now());
+    if (!res.ok) throw new Error();
+    ROUTES = await res.json();
+  } catch {
+    ROUTES = [];
+  }
+  render();
+}
+
+init();
+</script>
+</body>
+</html>

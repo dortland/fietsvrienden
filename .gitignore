@@ -1,0 +1,15 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Editor
+.vscode/
+*.swp
+*.swo
+
+# Local dev
+*.log
+
+# PDF (large binary, not needed on GitHub)
+*.pdf
